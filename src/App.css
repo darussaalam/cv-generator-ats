@@ -1313,3 +1313,525 @@
     width: 100%;
   }
 }
+
+/* ==========================================
+   CV PRO, AUTO-ARRANGE, & HR BUNDLE STYLES
+   ========================================== */
+
+/* Accent Button: Susun Otomatis */
+.btn-accent {
+  background: #0ea5e9;
+  color: #ffffff;
+  border-color: #0ea5e9;
+  font-weight: 600;
+  gap: 6px;
+}
+
+.btn-accent:hover {
+  background: #0284c7;
+  border-color: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);
+}
+
+/* Package Button: Paket HRD */
+.btn-package {
+  background: #10b981;
+  color: #ffffff;
+  border-color: #10b981;
+  font-weight: 600;
+  gap: 6px;
+}
+
+.btn-package:hover {
+  background: #059669;
+  border-color: #059669;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+/* Pro Control Bar */
+.pro-control-bar {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: var(--shadow-sm);
+  flex-wrap: wrap;
+}
+
+.pro-pill-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pro-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(37, 99, 235, 0.12);
+  border: 1px solid rgba(37, 99, 235, 0.28);
+  color: var(--primary);
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.pro-sub-note {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.preset-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.preset-selector-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.preset-buttons {
+  display: flex;
+  gap: 6px;
+  background: var(--bg-color);
+  padding: 3px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.btn-preset {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: calc(var(--radius-md) - 2px);
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-preset:hover {
+  color: var(--text-primary);
+}
+
+.btn-preset.active {
+  background: var(--card-bg);
+  color: var(--text-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* HR Quality Audit Card */
+.hr-audit-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.hr-audit-header {
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s ease;
+}
+
+.hr-audit-header:hover {
+  background-color: var(--hover-bg);
+}
+
+.hr-audit-main-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.audit-score-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.audit-score-circle span {
+  font-size: 1.125rem;
+}
+
+.audit-score-circle small {
+  font-size: 0.5625rem;
+  opacity: 0.8;
+}
+
+.audit-score-circle.score-high {
+  background: rgba(16, 185, 129, 0.15);
+  color: #059669;
+  border: 2px solid #10b981;
+}
+
+.audit-score-circle.score-med {
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+  border: 2px solid #f59e0b;
+}
+
+.audit-score-circle.score-low {
+  background: rgba(100, 116, 139, 0.15);
+  color: #475569;
+  border: 2px solid #94a3b8;
+}
+
+.audit-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.audit-card-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.audit-grade-tag {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--primary);
+}
+
+.audit-micro-tags {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.audit-tag {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+
+.audit-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.audit-collapse-icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.hr-audit-content {
+  padding: 0 18px 16px 18px;
+  border-top: 1px solid var(--border-color);
+}
+
+.audit-progress-track {
+  width: 100%;
+  height: 6px;
+  background: var(--border-color);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin: 14px 0 12px 0;
+}
+
+.audit-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #10b981);
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+}
+
+.audit-tips-box {
+  background: var(--hover-bg);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+}
+
+.audit-tips-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.audit-tips-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.audit-perfect-note {
+  font-size: 0.75rem;
+  color: #059669;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+}
+
+/* Preset: Executive Serif */
+.ats-paper.preset-executive {
+  font-family: 'Times New Roman', Times, Georgia, serif;
+  line-height: 1.35;
+}
+
+.ats-paper.preset-executive .ats-name {
+  font-family: 'Times New Roman', Times, Georgia, serif;
+  letter-spacing: 0.05em;
+}
+
+.ats-paper.preset-executive .ats-section-title {
+  font-family: 'Times New Roman', Times, Georgia, serif;
+  letter-spacing: 0.08em;
+  border-bottom-width: 1.5px;
+}
+
+/* Preset: Modern Sans */
+.ats-paper.preset-modern {
+  font-family: 'Plus Jakarta Sans', Arial, Helvetica, sans-serif;
+  line-height: 1.45;
+}
+
+.ats-paper.preset-modern .ats-name {
+  font-family: 'Plus Jakarta Sans', Arial, Helvetica, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.ats-paper.preset-modern .ats-section-title {
+  font-family: 'Plus Jakarta Sans', Arial, Helvetica, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* Preset: Fresh Graduate */
+.ats-paper.preset-freshgrad {
+  font-family: 'Plus Jakarta Sans', Calibri, Arial, sans-serif;
+  line-height: 1.4;
+}
+
+/* Modal Overlay & Card for Paket Berkas HRD */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.modal-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.modal-title-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.modal-icon-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.modal-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0 0 2px 0;
+  color: var(--text-primary);
+}
+
+.modal-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.btn-modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+}
+
+.btn-modal-close:hover {
+  color: var(--text-primary);
+  background: var(--hover-bg);
+}
+
+.modal-body {
+  padding: 20px 22px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-intro {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.pkg-items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.pkg-item-card {
+  background: var(--hover-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pkg-badge {
+  display: inline-block;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--primary);
+  margin-bottom: 6px;
+}
+
+.pkg-item-card h4 {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.pkg-item-card p {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin: 0;
+  flex: 1;
+}
+
+.email-preview-box {
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px;
+}
+
+.email-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.email-preview-textarea {
+  width: 100%;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  font-size: 0.75rem;
+  font-family: inherit;
+  color: var(--text-primary);
+  line-height: 1.45;
+  resize: vertical;
+}
+
+.modal-footer {
+  padding: 16px 22px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-xs {
+  padding: 4px 8px;
+  font-size: 0.6875rem;
+  min-height: auto;
+}
+

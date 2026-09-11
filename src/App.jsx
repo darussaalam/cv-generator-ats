@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import JSZip from 'jszip';
 import './App.css';
 
 const initialEmptyState = {
@@ -174,6 +175,128 @@ function PhoneIcon() {
   );
 }
 
+function SparklesIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+      <path d="M5 3v4" />
+      <path d="M19 17v4" />
+      <path d="M3 5h4" />
+      <path d="M17 19h4" />
+    </svg>
+  );
+}
+
+function PackageIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M20 7.5v9l-8 4.5-8-4.5v-9l8-4.5 8 4.5Z" />
+      <path d="M12 12v9" />
+      <path d="m12 12 8-4.5" />
+      <path d="M12 12 4 7.5" />
+    </svg>
+  );
+}
+
+function ShieldCheckIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}
+
+function CopyIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon({ isOpen }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      style={{
+        transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+        transition: 'transform 0.2s ease',
+      }}
+    >
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+}
+
 export default function App() {
   const [currentView, setCurrentView] = useState('landing');
   const [data, setData] = useState(initialEmptyState);
@@ -182,6 +305,12 @@ export default function App() {
   const [isDragActive, setIsDragActive] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
   const fileInputRef = useRef(null);
+
+  // Pro Mode & Smart Features States
+  const [isProMode, setIsProMode] = useState(true);
+  const [proPreset, setProPreset] = useState('executive'); // 'executive' | 'modern' | 'freshgrad'
+  const [showPackageModal, setShowPackageModal] = useState(false);
+  const [showAuditDrawer, setShowAuditDrawer] = useState(true);
 
   // Theme setup (Light & Dark Mode)
   const [theme, setTheme] = useState(() => {
@@ -477,6 +606,270 @@ export default function App() {
       .filter((line) => line.length > 0);
   };
 
+  const extractYearFromPeriod = (period) => {
+    if (!period) return 0;
+    const p = period.toLowerCase();
+    if (p.includes('sekarang') || p.includes('present') || p.includes('saat ini')) {
+      return 9999;
+    }
+    const matches = period.match(/\b(19\d\d|20\d\d)\b/g);
+    if (!matches || matches.length === 0) return 0;
+    return Math.max(...matches.map(Number));
+  };
+
+  const handleAutoArrange = () => {
+    // 1. Sort experiences reverse chronologically
+    const sortedExperiences = [...data.experiences].sort((a, b) => {
+      return extractYearFromPeriod(b.period) - extractYearFromPeriod(a.period);
+    });
+
+    // 2. Normalize and polish experience bullets
+    const polishedExperiences = sortedExperiences.map((exp) => {
+      if (!exp.bullets) return exp;
+      const lines = exp.bullets.split('\n');
+      const cleanedLines = lines
+        .map((line) => {
+          let trimmed = line.trim();
+          if (!trimmed) return '';
+          // Strip leading list symbols like -, *, •, >, 1., etc.
+          trimmed = trimmed.replace(/^[\s*\-•>·\d.)]+/, '').trim();
+          // Capitalize first letter
+          if (trimmed.length > 0) {
+            trimmed = trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+          }
+          // Normalize multiple spaces
+          trimmed = trimmed.replace(/\s{2,}/g, ' ');
+          return trimmed;
+        })
+        .filter((line) => line.length > 0);
+
+      return {
+        ...exp,
+        bullets: cleanedLines.join('\n'),
+      };
+    });
+
+    // 3. Sort education reverse chronologically
+    const sortedEducation = [...data.education].sort((a, b) => {
+      return extractYearFromPeriod(b.period) - extractYearFromPeriod(a.period);
+    });
+
+    setData((prev) => ({
+      ...prev,
+      experiences: polishedExperiences,
+      education: sortedEducation,
+    }));
+
+    setHasGenerated(true);
+    showToast('CV berhasil disusun otomatis: kronologi & butir pencapaian dirapikan untuk HRD!');
+  };
+
+  const hrAudit = useMemo(() => {
+    let score = 0;
+    const tips = [];
+    let actionVerbCount = 0;
+    let metricCount = 0;
+
+    const actionVerbList = [
+      'mengembangkan', 'memimpin', 'merancang', 'meningkatkan', 'mengelola',
+      'menganalisis', 'menyusun', 'mengkoordinasi', 'mengoptimalkan', 'membangun',
+      'meluncurkan', 'mengintegrasikan', 'mengeksekusi', 'menghasilkan', 'mengurangi',
+      'menerapkan', 'menginisiasi', 'mengarahkan', 'mengotomatisasi',
+      'led', 'developed', 'designed', 'built', 'implemented', 'improved',
+      'managed', 'created', 'optimized', 'launched', 'delivered', 'spearheaded'
+    ];
+
+    // Check 1: Name & Headline (15 pts)
+    if (data.personal.fullName.trim().length >= 3) {
+      score += 8;
+    } else {
+      tips.push('Lengkapi Nama Lengkap Anda.');
+    }
+    if (data.personal.headline.trim().length >= 5) {
+      score += 7;
+    } else {
+      tips.push('Tambahkan Headline posisi yang spesifik agar HRD langsung paham bidang keahlian Anda.');
+    }
+
+    // Check 2: Contact Completeness (20 pts)
+    if (data.personal.email.trim()) score += 8;
+    else tips.push('Email aktif wajib diisi.');
+
+    if (data.personal.phone.trim()) score += 6;
+    else tips.push('Cantumkan nomor WhatsApp/HP aktif untuk panggilan wawancara.');
+
+    if (
+      data.personal.linkedin.trim() ||
+      data.personal.github.trim() ||
+      data.personal.portfolio.trim() ||
+      data.personal.website.trim()
+    ) {
+      score += 6;
+    } else {
+      tips.push('Cantumkan tautan profil LinkedIn atau portofolio untuk verifikasi rekam jejak.');
+    }
+
+    // Check 3: Summary (15 pts)
+    const summaryWords = data.summary.trim()
+      ? data.summary.trim().split(/\s+/).length
+      : 0;
+    if (summaryWords >= 25 && summaryWords <= 120) {
+      score += 15;
+    } else if (summaryWords > 0) {
+      score += 8;
+      tips.push('Panjang ringkasan profesional disarankan 30-90 kata berorientasi pada pencapaian.');
+    } else {
+      tips.push('Tulis ringkasan profil singkat agar menarik perhatian HRD dalam 6 detik pertama.');
+    }
+
+    // Check 4: Experience & Bullets (20 pts)
+    const validExp = data.experiences.filter(
+      (e) => e.position.trim() || e.company.trim()
+    );
+    if (validExp.length >= 1) {
+      score += 10;
+      const allBullets = validExp
+        .map((e) => e.bullets || '')
+        .join('\n')
+        .toLowerCase();
+
+      // Check Action Verbs
+      actionVerbList.forEach((verb) => {
+        const regex = new RegExp(`\\b${verb}\\b`, 'gi');
+        const matches = allBullets.match(regex);
+        if (matches) actionVerbCount += matches.length;
+      });
+
+      if (actionVerbCount >= 3) {
+        score += 10;
+      } else {
+        score += Math.min(actionVerbCount * 3, 6);
+        tips.push('Gunakan kata kerja aksi aktif di awal butir pengalaman (misal: Memimpin, Mengembangkan, Mengoptimalkan).');
+      }
+
+      // Check Metrics (Numbers / Percentages) (15 pts)
+      const metricRegex = /\b(\d+[\d,.]*\s*(%|x|juta|ribu|miliar|orang|klien|user|pengguna)|rp\.?\s*\d+|\d{2,})\b/gi;
+      const metricMatches = allBullets.match(metricRegex);
+      if (metricMatches) {
+        metricCount = metricMatches.length;
+        score += 15;
+      } else {
+        tips.push('Sertakan angka atau persentase terukur pada capaian kerja (misal: "meningkatkan efisiensi 25%").');
+      }
+    } else {
+      tips.push('Tambahkan minimal 1 riwayat pengalaman kerja atau proyek organisasi.');
+    }
+
+    // Check 5: Skills (15 pts)
+    if (data.skills.technical.trim() || data.skills.methodologies.trim()) {
+      score += 15;
+    } else {
+      tips.push('Isi bagian keahlian teknis atau metodologi yang relevan dengan kualifikasi lowongan.');
+    }
+
+    return {
+      score: Math.min(score, 100),
+      actionVerbCount,
+      metricCount,
+      tips: tips.slice(0, 3),
+    };
+  }, [data]);
+
+  const generateCoverEmailText = () => {
+    const name = data.personal.fullName.trim() || 'Pelamar Kerja';
+    const headline = data.personal.headline.trim() || 'Posisi Terkait';
+    const email = data.personal.email.trim() || '-';
+    const phone = data.personal.phone.trim() || '-';
+    const linkedin = data.personal.linkedin.trim();
+    const portfolio =
+      data.personal.portfolio.trim() || data.personal.github.trim();
+
+    return `Subjek: Lamaran Pekerjaan: ${headline} - ${name}
+
+Yth. Tim Rekrutmen / HRD,
+[Nama Perusahaan]
+
+Perkenalkan, saya ${name}, seorang ${headline}. Melalui email ini, saya bermaksud untuk mengajukan lamaran pekerjaan pada posisi yang relevan dengan keahlian dan latar belakang profesional saya di perusahaan Bapak/Ibu.
+
+Ringkasan Kualifikasi Utama:
+1. Rekam jejak kerja berorientasi pada hasil nyata dan efisiensi terukur.
+2. Penguasaan keahlian teknis: ${data.skills.technical || 'Keahlian teknis dan kompetensi industri relevan'}.
+3. Pendekatan kerja terstruktur, disiplin, dan mampu beradaptasi cepat dalam tim.
+
+Bersama surat elektronik ini, saya telah melampirkan berkas Curriculum Vitae (CV) berformat ATS (Applicant Tracking System) untuk memberikan rincian lengkap mengenai perjalanan karir, pendidikan, dan portofolio saya.
+
+Saya sangat menyambut baik kesempatan wawancara untuk mendiskusikan lebih lanjut kontribusi yang dapat saya berikan kepada perusahaan Bapak/Ibu.
+
+Terima kasih atas perhatian dan kesempatan yang diberikan.
+
+Hormat saya,
+
+${name}
+Email: ${email}
+WhatsApp/Telepon: ${phone}${linkedin ? `\nLinkedIn: ${linkedin}` : ''}${portfolio ? `\nPortofolio: ${portfolio}` : ''}
+`;
+  };
+
+  const handleCopyCoverEmail = () => {
+    const text = generateCoverEmailText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Naskah email lamaran berhasil disalin ke clipboard.');
+      });
+    } else {
+      showToast('Naskah email siap disalin dari kotak teks.');
+    }
+  };
+
+  const handleDownloadPackageZip = async () => {
+    try {
+      const zip = new JSZip();
+      const safeName = data.personal.fullName
+        ? data.personal.fullName.replace(/\s+/g, '_')
+        : 'Pelamar';
+
+      // 1. Data JSON
+      zip.file(`Data_Cadangan_${safeName}.json`, JSON.stringify(data, null, 2));
+
+      // 2. Cover Email TXT
+      const emailContent = generateCoverEmailText();
+      zip.file(`Template_Email_Lamaran_${safeName}.txt`, emailContent);
+
+      // 3. Petunjuk Pengiriman HRD
+      const guideContent = `PETUNJUK PENGIRIMAN BERKAS KE HRD
+====================================
+1. Cetak CV ke PDF:
+   - Gunakan tombol 'Download PDF' di Kang CV Mu.
+   - Pada jendela cetak browser, pilih Destination: 'Save as PDF'.
+   - Atur Paper size: A4, Margin: None / Default.
+   - Simpan berkas dengan nama: CV_${safeName}_ATS.pdf
+
+2. Pengiriman Email ke HRD:
+   - Buka template email dari file 'Template_Email_Lamaran_${safeName}.txt'.
+   - Salin naskah ke badan email pengiriman lamaran.
+   - Lampirkan berkas PDF CV yang telah Anda simpan.
+   - Disarankan mengirim pada jam kerja (Senin - Kamis, pukul 08.30 - 10.30 WIB untuk tingkat respons tertinggi).
+
+3. File Cadangan (.json):
+   - Simpan file 'Data_Cadangan_${safeName}.json'.
+   - Kapan saja Anda ingin memperbarui atau mencetak ulang CV, cukup gunakan tombol 'Import JSON' di Kang CV Mu.
+`;
+      zip.file(`Petunjuk_Pengiriman_HRD_${safeName}.txt`, guideContent);
+
+      const content = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(content);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Paket_HRD_${safeName}.zip`;
+      link.click();
+      URL.revokeObjectURL(url);
+
+      showToast('Paket Berkas HRD (.zip) berhasil diunduh.');
+    } catch (err) {
+      showToast('Gagal membuat paket berkas zip: ' + err.message);
+    }
+  };
+
   // ==========================================
   // VIEW 1: LANDING PAGE
   // ==========================================
@@ -746,6 +1139,36 @@ export default function App() {
               <div className="feature-icon-badge" aria-hidden="true">
                 2
               </div>
+              <h3 className="feature-title">Susunkan Otomatis (HR Ready)</h3>
+              <p className="feature-desc">
+                Satu klik untuk mengurutkan riwayat secara kronologis terbalik, membersihkan format butir pencapaian, dan menonjolkan kata kerja aksi STAR.
+              </p>
+            </div>
+
+            <div className="feature-card">
+              <div className="feature-icon-badge" aria-hidden="true">
+                3
+              </div>
+              <h3 className="feature-title">Paket Berkas HRD (.ZIP)</h3>
+              <p className="feature-desc">
+                Unduh bundel siap lamar lengkap: PDF A4 resmi, template naskah cover email lamaran, dan data cadangan JSON dalam satu arsip ZIP.
+              </p>
+            </div>
+
+            <div className="feature-card">
+              <div className="feature-icon-badge" aria-hidden="true">
+                4
+              </div>
+              <h3 className="feature-title">Audit Kualitas ATS &amp; HR</h3>
+              <p className="feature-desc">
+                Pemeriksaan langsung skor keterbacaan (0-100), pendeteksian kata kerja aktif, dan kuantifikasi capaian (angka dan persentase) secara real-time.
+              </p>
+            </div>
+
+            <div className="feature-card">
+              <div className="feature-icon-badge" aria-hidden="true">
+                5
+              </div>
               <h3 className="feature-title">Ekspor PDF Vektor A4</h3>
               <p className="feature-desc">
                 Hasil cetak berformat A4 dengan teks asli yang dapat diseleksi dan dibaca mesin pemindai dokumen, bukan tangkapan layar gambar raster.
@@ -754,21 +1177,11 @@ export default function App() {
 
             <div className="feature-card">
               <div className="feature-icon-badge" aria-hidden="true">
-                3
+                6
               </div>
               <h3 className="feature-title">Privasi 100% Aman di Lokal</h3>
               <p className="feature-desc">
-                Data pribadi dan riwayat karir Anda tidak dikirimkan ke server pihak ketiga atau basis data luar. Seluruh proses berjalan langsung di peramban Anda.
-              </p>
-            </div>
-
-            <div className="feature-card">
-              <div className="feature-icon-badge" aria-hidden="true">
-                4
-              </div>
-              <h3 className="feature-title">Cadangan Berkas JSON</h3>
-              <p className="feature-desc">
-                Dukung ekspor dan impor berkas JSON dengan fitur seret dan lepas. Simpan draf Anda ke perangkat dan lanjutkan pengeditan kapan pun.
+                Data pribadi dan riwayat karir Anda tidak pernah dikirimkan ke server eksternal. Seluruh pemrosesan berjalan sepenuhnya di peramban Anda.
               </p>
             </div>
           </div>
@@ -941,6 +1354,29 @@ export default function App() {
               style={{ display: 'none' }}
               onChange={handleFileSelect}
             />
+
+            {/* Smart Auto-Arrange for HR Button */}
+            <button
+              type="button"
+              className="btn btn-accent"
+              onClick={handleAutoArrange}
+              title="Urutkan riwayat secara kronologis dan rapikan butir pencapaian untuk menarik perhatian HRD"
+            >
+              <SparklesIcon />
+              <span>Susun Otomatis</span>
+            </button>
+
+            {/* HR Package Bundle Button */}
+            <button
+              type="button"
+              className="btn btn-package"
+              onClick={() => setShowPackageModal(true)}
+              title="Paket Berkas HRD: PDF A4, JSON, dan Template Cover Email Lamaran"
+            >
+              <PackageIcon />
+              <span>Paket HRD</span>
+            </button>
+
             <button
               type="button"
               className="btn btn-primary"
@@ -963,6 +1399,151 @@ export default function App() {
       <main className="app-container">
         {/* Left Column: Form Builder (Full Width on Mobile) */}
         <section className="form-column no-print" aria-label="Formulir CV">
+          {/* CV Pro Control Bar & Preset Switcher */}
+          <div className="pro-control-bar">
+            <div className="pro-pill-group">
+              <span className="pro-badge-pill">
+                <ShieldCheckIcon />
+                <span>MODE CV PRO</span>
+              </span>
+              <span className="pro-sub-note">Standar ATS Terverifikasi</span>
+            </div>
+
+            <div className="preset-selector" role="group" aria-label="Pilihan Preset Format ATS">
+              <span className="preset-selector-label">Preset Format:</span>
+              <div className="preset-buttons">
+                <button
+                  type="button"
+                  className={`btn-preset ${proPreset === 'executive' ? 'active' : ''}`}
+                  onClick={() => {
+                    setProPreset('executive');
+                    setHasGenerated(true);
+                  }}
+                  title="Preset klasik Serif (Times New Roman), pembatas rapi, orientasi profesional mapan"
+                >
+                  Executive Serif
+                </button>
+                <button
+                  type="button"
+                  className={`btn-preset ${proPreset === 'modern' ? 'active' : ''}`}
+                  onClick={() => {
+                    setProPreset('modern');
+                    setHasGenerated(true);
+                  }}
+                  title="Preset Sans-Serif bersih dan modern, kategori teknis terstruktur rapi"
+                >
+                  Modern Sans
+                </button>
+                <button
+                  type="button"
+                  className={`btn-preset ${proPreset === 'freshgrad' ? 'active' : ''}`}
+                  onClick={() => {
+                    setProPreset('freshgrad');
+                    setHasGenerated(true);
+                  }}
+                  title="Preset khusus Fresh Graduate: memprioritaskan riwayat Pendidikan dan Proyek di bagian atas"
+                >
+                  Fresh Graduate
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Live HR Quality Audit Card */}
+          <div className="hr-audit-card">
+            <div
+              className="hr-audit-header"
+              onClick={() => setShowAuditDrawer((prev) => !prev)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  setShowAuditDrawer((prev) => !prev);
+                }
+              }}
+              aria-expanded={showAuditDrawer}
+            >
+              <div className="hr-audit-main-info">
+                <div
+                  className={`audit-score-circle ${
+                    hrAudit.score >= 80
+                      ? 'score-high'
+                      : hrAudit.score >= 50
+                      ? 'score-med'
+                      : 'score-low'
+                  }`}
+                >
+                  <span>{hrAudit.score}</span>
+                  <small>/100</small>
+                </div>
+                <div>
+                  <div className="audit-title-row">
+                    <h3 className="audit-card-title">Audit Kualitas HR &amp; ATS</h3>
+                    <span className="audit-grade-tag">
+                      {hrAudit.score >= 85
+                        ? 'Sangat Siap Dilirik HRD'
+                        : hrAudit.score >= 65
+                        ? 'Standar ATS Terpenuhi'
+                        : 'Perlu Pengisian Tambahan'}
+                    </span>
+                  </div>
+                  <div className="audit-micro-tags">
+                    <span className="audit-tag">
+                      <strong>{hrAudit.actionVerbCount}</strong> Kata Kerja Aksi (STAR)
+                    </span>
+                    <span className="audit-tag">
+                      <strong>{hrAudit.metricCount}</strong> Capaian Terukur (Angka/%)
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="audit-header-right">
+                <button
+                  type="button"
+                  className="btn btn-accent btn-sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAutoArrange();
+                  }}
+                  title="Susunkan otomatis data Anda"
+                >
+                  <SparklesIcon />
+                  <span>Susun Otomatis</span>
+                </button>
+                <span className="audit-collapse-icon" aria-hidden="true">
+                  <ChevronDownIcon isOpen={showAuditDrawer} />
+                </span>
+              </div>
+            </div>
+
+            {showAuditDrawer && (
+              <div className="hr-audit-content">
+                <div className="audit-progress-track">
+                  <div
+                    className="audit-progress-fill"
+                    style={{ width: `${hrAudit.score}%` }}
+                  />
+                </div>
+
+                {hrAudit.tips.length > 0 ? (
+                  <div className="audit-tips-box">
+                    <p className="audit-tips-title">Saran Optimasi untuk Menarik Minat HRD:</p>
+                    <ul className="audit-tips-list">
+                      {hrAudit.tips.map((tip, idx) => (
+                        <li key={idx}>{tip}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <div className="audit-perfect-note">
+                    CV Anda telah memenuhi seluruh kriteria utama pindaian ATS dan format 6 detik HRD. Siap untuk diekspor ke PDF dan dilampirkan ke lamaran kerja!
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Card: Personal Information */}
           <div className="form-card">
             <div className="card-header">
@@ -1510,7 +2091,10 @@ export default function App() {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
           >
-            <div id="resume-print-area" className="ats-paper">
+            <div
+              id="resume-print-area"
+              className={`ats-paper ${isProMode ? `preset-${proPreset}` : ''}`}
+            >
               {!hasGenerated ? (
                 /* Empty state */
                 <div className="empty-preview no-print">
@@ -1594,121 +2178,246 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* Experience Section */}
-                  {data.experiences.some((e) => e.position || e.company) && (
-                    <div className="ats-section">
-                      <h2 className="ats-section-title">Professional Experience</h2>
-                      {data.experiences.map((exp) => {
-                        const bullets = parseBullets(exp.bullets);
-                        return (
-                          <div key={exp.id} className="ats-exp-item">
-                            <div className="ats-row">
-                              <div>
-                                <span className="ats-bold">{exp.position}</span>
-                                {exp.company && (
-                                  <span className="ats-subtext">, {exp.company}</span>
+                  {/* Dynamic Section Ordering based on proPreset */}
+                  {proPreset === 'freshgrad' ? (
+                    <>
+                      {/* 1. Education */}
+                      {data.education.some((e) => e.degree || e.institution) && (
+                        <div className="ats-section">
+                          <h2 className="ats-section-title">Education</h2>
+                          {data.education.map((edu) => (
+                            <div key={edu.id} className="ats-exp-item">
+                              <div className="ats-row">
+                                <div>
+                                  <span className="ats-bold">{edu.degree}</span>
+                                  {edu.institution && (
+                                    <span className="ats-subtext">, {edu.institution}</span>
+                                  )}
+                                </div>
+                                <div className="ats-date-loc">
+                                  {edu.period}
+                                  {edu.gpa && ` | ${edu.gpa}`}
+                                </div>
+                              </div>
+                              {edu.details && (
+                                <p className="ats-paragraph" style={{ marginTop: '2px' }}>
+                                  {edu.details}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* 2. Featured Projects */}
+                      {data.projects.some((p) => p.name) && (
+                        <div className="ats-section">
+                          <h2 className="ats-section-title">Featured Projects</h2>
+                          {data.projects.map((proj) => (
+                            <div key={proj.id} className="ats-exp-item">
+                              <div className="ats-row">
+                                <div>
+                                  <span className="ats-bold">{proj.name}</span>
+                                  {proj.role && (
+                                    <span className="ats-subtext">, {proj.role}</span>
+                                  )}
+                                </div>
+                                {proj.link && (
+                                  <div className="ats-date-loc">
+                                    <a href={proj.link} target="_blank" rel="noreferrer">
+                                      {proj.link.replace(/^https?:\/\//, '')}
+                                    </a>
+                                  </div>
                                 )}
                               </div>
-                              <div className="ats-date-loc">
-                                {exp.period}
-                                {exp.period && exp.location && ' | '}
-                                {exp.location}
-                              </div>
-                            </div>
-                            {bullets.length > 0 && (
-                              <ul className="ats-list">
-                                {bullets.map((bullet, idx) => (
-                                  <li key={idx}>{bullet}</li>
-                                ))}
-                              </ul>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {/* Education Section */}
-                  {data.education.some((e) => e.degree || e.institution) && (
-                    <div className="ats-section">
-                      <h2 className="ats-section-title">Education</h2>
-                      {data.education.map((edu) => (
-                        <div key={edu.id} className="ats-exp-item">
-                          <div className="ats-row">
-                            <div>
-                              <span className="ats-bold">{edu.degree}</span>
-                              {edu.institution && (
-                                <span className="ats-subtext">, {edu.institution}</span>
+                              {proj.description && (
+                                <p className="ats-paragraph" style={{ marginTop: '2px' }}>
+                                  {proj.description}
+                                </p>
                               )}
                             </div>
-                            <div className="ats-date-loc">
-                              {edu.period}
-                              {edu.gpa && ` | ${edu.gpa}`}
-                            </div>
-                          </div>
-                          {edu.details && (
-                            <p className="ats-paragraph" style={{ marginTop: '2px' }}>
-                              {edu.details}
+                          ))}
+                        </div>
+                      )}
+
+                      {/* 3. Skills */}
+                      {(data.skills.technical ||
+                        data.skills.methodologies ||
+                        data.skills.languages) && (
+                        <div className="ats-section">
+                          <h2 className="ats-section-title">Skills &amp; Competencies</h2>
+                          {data.skills.technical && (
+                            <p className="ats-paragraph">
+                              <strong>Keahlian Teknis &amp; Tools:</strong> {data.skills.technical}
+                            </p>
+                          )}
+                          {data.skills.methodologies && (
+                            <p className="ats-paragraph">
+                              <strong>Metodologi:</strong> {data.skills.methodologies}
+                            </p>
+                          )}
+                          {data.skills.languages && (
+                            <p className="ats-paragraph">
+                              <strong>Bahasa:</strong> {data.skills.languages}
                             </p>
                           )}
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      )}
 
-                  {/* Skills Section */}
-                  {(data.skills.technical ||
-                    data.skills.methodologies ||
-                    data.skills.languages) && (
-                    <div className="ats-section">
-                      <h2 className="ats-section-title">Skills &amp; Competencies</h2>
-                      {data.skills.technical && (
-                        <p className="ats-paragraph">
-                          <strong>Keahlian Teknis &amp; Tools:</strong> {data.skills.technical}
-                        </p>
+                      {/* 4. Experience / Internship */}
+                      {data.experiences.some((e) => e.position || e.company) && (
+                        <div className="ats-section">
+                          <h2 className="ats-section-title">Work Experience &amp; Internships</h2>
+                          {data.experiences.map((exp) => {
+                            const bullets = parseBullets(exp.bullets);
+                            return (
+                              <div key={exp.id} className="ats-exp-item">
+                                <div className="ats-row">
+                                  <div>
+                                    <span className="ats-bold">{exp.position}</span>
+                                    {exp.company && (
+                                      <span className="ats-subtext">, {exp.company}</span>
+                                    )}
+                                  </div>
+                                  <div className="ats-date-loc">
+                                    {exp.period}
+                                    {exp.period && exp.location && ' | '}
+                                    {exp.location}
+                                  </div>
+                                </div>
+                                {bullets.length > 0 && (
+                                  <ul className="ats-list">
+                                    {bullets.map((bullet, idx) => (
+                                      <li key={idx}>{bullet}</li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
                       )}
-                      {data.skills.methodologies && (
-                        <p className="ats-paragraph">
-                          <strong>Metodologi:</strong> {data.skills.methodologies}
-                        </p>
+                    </>
+                  ) : (
+                    <>
+                      {/* Standard / Executive / Modern Order */}
+                      {/* 1. Experience */}
+                      {data.experiences.some((e) => e.position || e.company) && (
+                        <div className="ats-section">
+                          <h2 className="ats-section-title">Professional Experience</h2>
+                          {data.experiences.map((exp) => {
+                            const bullets = parseBullets(exp.bullets);
+                            return (
+                              <div key={exp.id} className="ats-exp-item">
+                                <div className="ats-row">
+                                  <div>
+                                    <span className="ats-bold">{exp.position}</span>
+                                    {exp.company && (
+                                      <span className="ats-subtext">, {exp.company}</span>
+                                    )}
+                                  </div>
+                                  <div className="ats-date-loc">
+                                    {exp.period}
+                                    {exp.period && exp.location && ' | '}
+                                    {exp.location}
+                                  </div>
+                                </div>
+                                {bullets.length > 0 && (
+                                  <ul className="ats-list">
+                                    {bullets.map((bullet, idx) => (
+                                      <li key={idx}>{bullet}</li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
                       )}
-                      {data.skills.languages && (
-                        <p className="ats-paragraph">
-                          <strong>Bahasa:</strong> {data.skills.languages}
-                        </p>
-                      )}
-                    </div>
-                  )}
 
-                  {/* Projects Section */}
-                  {data.projects.some((p) => p.name) && (
-                    <div className="ats-section">
-                      <h2 className="ats-section-title">Featured Projects</h2>
-                      {data.projects.map((proj) => (
-                        <div key={proj.id} className="ats-exp-item">
-                          <div className="ats-row">
-                            <div>
-                              <span className="ats-bold">{proj.name}</span>
-                              {proj.role && (
-                                <span className="ats-subtext">, {proj.role}</span>
+                      {/* 2. Education */}
+                      {data.education.some((e) => e.degree || e.institution) && (
+                        <div className="ats-section">
+                          <h2 className="ats-section-title">Education</h2>
+                          {data.education.map((edu) => (
+                            <div key={edu.id} className="ats-exp-item">
+                              <div className="ats-row">
+                                <div>
+                                  <span className="ats-bold">{edu.degree}</span>
+                                  {edu.institution && (
+                                    <span className="ats-subtext">, {edu.institution}</span>
+                                  )}
+                                </div>
+                                <div className="ats-date-loc">
+                                  {edu.period}
+                                  {edu.gpa && ` | ${edu.gpa}`}
+                                </div>
+                              </div>
+                              {edu.details && (
+                                <p className="ats-paragraph" style={{ marginTop: '2px' }}>
+                                  {edu.details}
+                                </p>
                               )}
                             </div>
-                            {proj.link && (
-                              <div className="ats-date-loc">
-                                <a href={proj.link} target="_blank" rel="noreferrer">
-                                  {proj.link.replace(/^https?:\/\//, '')}
-                                </a>
-                              </div>
-                            )}
-                          </div>
-                          {proj.description && (
-                            <p className="ats-paragraph" style={{ marginTop: '2px' }}>
-                              {proj.description}
+                          ))}
+                        </div>
+                      )}
+
+                      {/* 3. Skills */}
+                      {(data.skills.technical ||
+                        data.skills.methodologies ||
+                        data.skills.languages) && (
+                        <div className="ats-section">
+                          <h2 className="ats-section-title">Skills &amp; Competencies</h2>
+                          {data.skills.technical && (
+                            <p className="ats-paragraph">
+                              <strong>Keahlian Teknis &amp; Tools:</strong> {data.skills.technical}
+                            </p>
+                          )}
+                          {data.skills.methodologies && (
+                            <p className="ats-paragraph">
+                              <strong>Metodologi:</strong> {data.skills.methodologies}
+                            </p>
+                          )}
+                          {data.skills.languages && (
+                            <p className="ats-paragraph">
+                              <strong>Bahasa:</strong> {data.skills.languages}
                             </p>
                           )}
                         </div>
-                      ))}
-                    </div>
+                      )}
+
+                      {/* 4. Projects */}
+                      {data.projects.some((p) => p.name) && (
+                        <div className="ats-section">
+                          <h2 className="ats-section-title">Featured Projects</h2>
+                          {data.projects.map((proj) => (
+                            <div key={proj.id} className="ats-exp-item">
+                              <div className="ats-row">
+                                <div>
+                                  <span className="ats-bold">{proj.name}</span>
+                                  {proj.role && (
+                                    <span className="ats-subtext">, {proj.role}</span>
+                                  )}
+                                </div>
+                                {proj.link && (
+                                  <div className="ats-date-loc">
+                                    <a href={proj.link} target="_blank" rel="noreferrer">
+                                      {proj.link.replace(/^https?:\/\//, '')}
+                                    </a>
+                                  </div>
+                                )}
+                              </div>
+                              {proj.description && (
+                                <p className="ats-paragraph" style={{ marginTop: '2px' }}>
+                                  {proj.description}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               )}
@@ -1735,21 +2444,33 @@ export default function App() {
         </section>
       </main>
 
-      {/* Floating Bottom Action Bar for Mobile Screens (no preview needed, direct actions) */}
+      {/* Floating Bottom Action Bar for Mobile Screens */}
       <div className="mobile-bottom-bar no-print">
         <button
           type="button"
           className="btn btn-outline"
           onClick={handleLoadSample}
+          title="Muat data contoh"
         >
-          Load Contoh
+          Contoh
         </button>
         <button
           type="button"
-          className="btn btn-outline"
-          onClick={handleExportJSON}
+          className="btn btn-accent"
+          onClick={handleAutoArrange}
+          title="Susunkan Otomatis untuk HRD"
         >
-          Export JSON
+          <SparklesIcon />
+          <span>Susun</span>
+        </button>
+        <button
+          type="button"
+          className="btn btn-package"
+          onClick={() => setShowPackageModal(true)}
+          title="Paket Berkas HRD"
+        >
+          <PackageIcon />
+          <span>Paket HRD</span>
         </button>
         <button
           type="button"
@@ -1759,6 +2480,149 @@ export default function App() {
           Download PDF
         </button>
       </div>
+
+      {/* Modal Paket Berkas HRD */}
+      {showPackageModal && (
+        <div
+          className="modal-overlay no-print"
+          onClick={() => setShowPackageModal(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-pkg-title"
+        >
+          <div
+            className="modal-card"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <div className="modal-title-group">
+                <div className="modal-icon-badge" aria-hidden="true">
+                  <PackageIcon />
+                </div>
+                <div>
+                  <h3 id="modal-pkg-title" className="modal-title">
+                    Paket Berkas Siap Lamar HRD
+                  </h3>
+                  <p className="modal-subtitle">
+                    Berkas lengkap terstandarisasi untuk meningkatkan peluang dipanggil wawancara
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="btn-modal-close"
+                onClick={() => setShowPackageModal(false)}
+                aria-label="Tutup jendela paket berkas"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <p className="modal-intro">
+                HRD dan tim rekrutmen menyukai pelamar kerja yang rapi, profesional, dan menyediakan berkas siap proses. Paket ini mengemas seluruh kebutuhan pengiriman lamaran Anda dalam satu klik:
+              </p>
+
+              <div className="pkg-items-grid">
+                {/* Item 1: PDF ATS */}
+                <div className="pkg-item-card">
+                  <div className="pkg-item-header">
+                    <span className="pkg-badge">Dokumen Utama</span>
+                    <h4>1. CV ATS Resmi (PDF A4)</h4>
+                  </div>
+                  <p>
+                    Format standar single-column yang lolos parser ATS dan nyaman dibaca human recruiter.
+                  </p>
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    onClick={() => {
+                      setShowPackageModal(false);
+                      handleDownloadPDF();
+                    }}
+                  >
+                    Buka Dialog Cetak PDF
+                  </button>
+                </div>
+
+                {/* Item 2: Cover Email */}
+                <div className="pkg-item-card">
+                  <div className="pkg-item-header">
+                    <span className="pkg-badge">Siap Salin</span>
+                    <h4>2. Template Cover Email Lamaran</h4>
+                  </div>
+                  <p>
+                    Naskah pengantar formal untuk badan email pelamaran, memuat salam hormat dan 3 keunggulan Anda.
+                  </p>
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    onClick={handleCopyCoverEmail}
+                  >
+                    <CopyIcon /> Salin Naskah Email
+                  </button>
+                </div>
+
+                {/* Item 3: Data JSON Backup */}
+                <div className="pkg-item-card">
+                  <div className="pkg-item-header">
+                    <span className="pkg-badge">Cadangan</span>
+                    <h4>3. Berkas Data Cadangan (.JSON)</h4>
+                  </div>
+                  <p>
+                    Data terstruktur untuk menyimpan isian formulir agar bisa Anda perbarui sewaktu-waktu di Kang CV Mu.
+                  </p>
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    onClick={handleExportJSON}
+                  >
+                    Unduh JSON
+                  </button>
+                </div>
+              </div>
+
+              {/* Preview Naskah Email Box */}
+              <div className="email-preview-box">
+                <div className="email-preview-header">
+                  <span>Pratinjau Naskah Email Lamaran:</span>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-xs"
+                    onClick={handleCopyCoverEmail}
+                  >
+                    <CopyIcon /> Salin Teks
+                  </button>
+                </div>
+                <textarea
+                  className="email-preview-textarea"
+                  readOnly
+                  rows={6}
+                  value={generateCoverEmailText()}
+                />
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => setShowPackageModal(false)}
+              >
+                Tutup
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleDownloadPackageZip}
+              >
+                <PackageIcon />
+                <span>Unduh Seluruh Paket (.ZIP)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Floating feedback notification */}
       {toastMessage && (
