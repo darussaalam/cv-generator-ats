@@ -539,69 +539,195 @@ export default function App() {
 
         {/* Hero Section */}
         <main id="beranda" className="landing-hero">
-          <div className="hero-badge">
-            Platform CV ATS Indonesia
-          </div>
-
-          <h1 className="hero-title">
-            Buat CV Standar ATS Profesional, Cepat dan Bebas Ribet
-          </h1>
-
-          <p className="hero-subtitle">
-            Rancang resume berformat standar Applicant Tracking System (ATS) langsung di peramban. 100% gratis, 1-klik unduh PDF vektor A4 berkualitas tinggi, dan data Anda tersimpan aman secara lokal tanpa perlu registrasi akun.
-          </p>
-
-          <div className="hero-ctas">
-            <button
-              type="button"
-              className="btn btn-primary btn-lg"
-              onClick={() => setCurrentView('builder')}
-            >
-              Mulai Buat CV Sekarang
-            </button>
-            <button
-              type="button"
-              className="btn btn-outline btn-lg"
-              onClick={handleLoadSampleAndOpenBuilder}
-            >
-              Buka dengan Data Contoh
-            </button>
-          </div>
-
-          {/* Frosted Glass Hero Showcase */}
-          <div className="hero-showcase">
-            <div className="showcase-header">
-              <div className="showcase-tag-list">
-                <span className="showcase-tag">Single-Column ATS</span>
-                <span className="showcase-tag">100% Vektor PDF</span>
-                <span className="showcase-tag">Privasi Lokal</span>
+          <div className="hero-split-grid">
+            <div className="hero-copy-col">
+              <div className="hero-badge">
+                <span className="hero-badge-dot" aria-hidden="true"></span>
+                Standar Format HRD &amp; ATS Global
               </div>
-              <span>Live Preview Resume</span>
+
+              <h1 className="hero-title">
+                Buat Resume Standar ATS.
+                <span className="hero-title-accent">Lolos Seleksi Kerja.</span>
+              </h1>
+
+              <p className="hero-subtitle">
+                Tingkatkan peluang panggilan wawancara kerja dengan resume berformat standar ATS murni. 100% teks vektor asli yang mudah dipindai oleh software HRD, bebas biaya, tanpa login, dan privasi Anda tersimpan aman langsung di peramban.
+              </p>
+
+              <div className="hero-ctas">
+                <button
+                  type="button"
+                  className="btn btn-primary btn-lg"
+                  onClick={() => setCurrentView('builder')}
+                >
+                  Mulai Buat CV Sekarang
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline btn-lg"
+                  onClick={handleLoadSampleAndOpenBuilder}
+                >
+                  Buka dengan Data Contoh
+                </button>
+              </div>
+
+              <div className="hero-proof-list">
+                <span className="hero-proof-item">
+                  <span className="hero-proof-check" aria-hidden="true">✓</span> Single-Column ATS Murni
+                </span>
+                <span className="hero-proof-item">
+                  <span className="hero-proof-check" aria-hidden="true">✓</span> 100% Vektor PDF A4
+                </span>
+                <span className="hero-proof-item">
+                  <span className="hero-proof-check" aria-hidden="true">✓</span> Privasi Lokal Tanpa Database
+                </span>
+              </div>
             </div>
 
-            <div className="showcase-paper">
-              <h2 className="showcase-name">ALYA PRATIWI SARI</h2>
-              <p className="showcase-role">
-                UI/UX Designer | Frontend Developer | Design Systems
-              </p>
-              <p className="showcase-contact">
-                Jakarta, Indonesia | alya.pratiwi.sari@example.com | +62 811-9876-5432 | LinkedIn | Portfolio
-              </p>
-              <hr className="showcase-divider" />
-              <h3 className="showcase-sec-title">PROFESSIONAL SUMMARY</h3>
-              <p className="showcase-body">
-                UI/UX Designer and Frontend Developer with 5+ years crafting user-centered digital products, design systems, and performant web interfaces. Experienced in Figma, Design Thinking, React, Next.js, and WCAG AA accessibility standards.
-              </p>
+            <div className="hero-visual-col">
+              <div className="hero-mock-pedestal">
+                <div
+                  className="hero-showcase-card"
+                  onClick={() => setCurrentView('builder')}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      setCurrentView('builder');
+                    }
+                  }}
+                  title="Klik untuk membuka editor CV"
+                >
+                  <div className="showcase-header">
+                    <span className="showcase-pill">100% ATS Parsable</span>
+                    <span>A4 Margin 15mm</span>
+                  </div>
+
+                  <div className="showcase-paper">
+                    <h2 className="showcase-name">ALYA PRATIWI SARI</h2>
+                    <p className="showcase-role">
+                      UI/UX Designer | Frontend Developer | Design Systems
+                    </p>
+                    <p className="showcase-contact">
+                      Jakarta, Indonesia | alya.pratiwi.sari@example.com | +62 811-9876-5432 | LinkedIn
+                    </p>
+                    <hr className="showcase-divider" />
+                    <h3 className="showcase-sec-title">PROFESSIONAL SUMMARY</h3>
+                    <p className="showcase-body">
+                      UI/UX Designer and Frontend Developer with 5+ years crafting user-centered digital products, design systems, and performant web interfaces. Experienced in Figma, React, Next.js, and WCAG AA accessibility standards.
+                    </p>
+                    <h3 className="showcase-sec-title" style={{ marginTop: '10px' }}>WORK EXPERIENCE</h3>
+                    <p className="showcase-body">
+                      <strong>Senior UI/UX Designer</strong>, Luna Tech Studio | Jan 2023 - Present
+                    </p>
+                    <p className="showcase-body" style={{ color: '#475569', fontSize: '0.73rem', marginTop: '3px' }}>
+                      • Lead end-to-end design for SaaS analytics dashboard serving 50k+ monthly active users.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </main>
 
+        {/* ATS Education & Comparison Section */}
+        <section className="landing-section">
+          <div className="section-header">
+            <span className="section-tag">Edukasi Standar Rekrutmen</span>
+            <h2 className="section-title">Mengapa Harus Format ATS?</h2>
+            <p className="section-subtitle">
+              Lebih dari 75% CV pelamar kerja gugur di tahap awal seleksi otomatis karena sistem penyaring HRD gagal membaca format dokumen yang berantakan atau bertumpuk.
+            </p>
+          </div>
+
+          <div className="comparison-grid">
+            {/* Card: Graphic/Canva Format */}
+            <div className="compare-card compare-card-bad">
+              <span className="compare-badge-bad">Beresiko Gagal di ATS</span>
+              <h3 className="compare-title">Format Grafis / Desain Biasa</h3>
+              <ul className="compare-list">
+                <li>
+                  <span className="compare-icon-bad" aria-hidden="true">✕</span>
+                  <span>Kolom ganda atau tata letak tabel rumit membuat alur baca sistem ATS menjadi acak dan terpotong.</span>
+                </li>
+                <li>
+                  <span className="compare-icon-bad" aria-hidden="true">✕</span>
+                  <span>Teks sering diekspor sebagai gambar atau kurva bitmap yang tidak dapat dibaca oleh mesin pencari kata kunci.</span>
+                </li>
+                <li>
+                  <span className="compare-icon-bad" aria-hidden="true">✕</span>
+                  <span>Ikon dekoratif, rating bintang keahlian, dan foto profil membingungkan algoritma penyaring HRD.</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Card: Kang CV Mu Standard ATS */}
+            <div className="compare-card compare-card-good">
+              <span className="compare-badge-good">Rekomendasi Standar ATS</span>
+              <h3 className="compare-title">Format Standar Kang CV Mu</h3>
+              <ul className="compare-list">
+                <li>
+                  <span className="compare-icon-good" aria-hidden="true">✓</span>
+                  <span>Struktur kolom tunggal (*single-column*) murni dengan hirarki baca atas ke bawah yang logis dan konsisten.</span>
+                </li>
+                <li>
+                  <span className="compare-icon-good" aria-hidden="true">✓</span>
+                  <span>Ekspor teks vektor A4 beresolusi tinggi yang 100% dapat diseleksi, dicari, dan diparsing otomatis oleh software HRD.</span>
+                </li>
+                <li>
+                  <span className="compare-icon-good" aria-hidden="true">✓</span>
+                  <span>Tipografi klasik standar industri (Times New Roman / Calibri) yang diakui secara global oleh Workday, Taleo, dan Greenhouse.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        {/* Practical 3-Step Process Section */}
+        <section className="landing-section" style={{ paddingTop: '10px' }}>
+          <div className="section-header">
+            <span className="section-tag">Alur Praktis</span>
+            <h2 className="section-title">3 Langkah Mudah Miliki CV Impian</h2>
+            <p className="section-subtitle">
+              Tanpa perlu menginstal perangkat lunak berat atau mendaftar akun. Siap dalam hitungan menit.
+            </p>
+          </div>
+
+          <div className="process-grid">
+            <div className="process-card">
+              <div className="process-step-num" aria-hidden="true">01</div>
+              <h3 className="process-title">Isi Data Karir</h3>
+              <p className="process-desc">
+                Masukkan identitas, ringkasan profil, pengalaman kerja, pendidikan, dan keahlian Anda melalui formulir terstruktur kami.
+              </p>
+            </div>
+
+            <div className="process-card">
+              <div className="process-step-num" aria-hidden="true">02</div>
+              <h3 className="process-title">Pratinjau Langsung</h3>
+              <p className="process-desc">
+                Lihat simulasi dokumen A4 standar ATS secara instan di layar komputer Anda untuk memastikan tidak ada kesalahan ketik.
+              </p>
+            </div>
+
+            <div className="process-card">
+              <div className="process-step-num" aria-hidden="true">03</div>
+              <h3 className="process-title">1-Klik Unduh PDF</h3>
+              <p className="process-desc">
+                Cetak atau unduh dokumen PDF vektor A4 resmi yang siap dikirimkan ke berbagai portal lowongan kerja impian Anda.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* Features Section */}
         <section id="fitur" className="landing-section">
           <div className="section-header">
-            <h2 className="section-title">Keunggulan Kang CV Mu</h2>
+            <span className="section-tag">Fitur Unggulan</span>
+            <h2 className="section-title">Keunggulan Teknis Kang CV Mu</h2>
             <p className="section-subtitle">
-              Dirancang dengan standar teknis yang mempermudah sistem ATS perusahaan membaca pengalaman dan keahlian Anda tanpa kesalahan parsing.
+              Dibangun dengan teknologi web modern untuk performa tinggi, privasi penuh, dan hasil cetak dokumen berkualitas profesional.
             </p>
           </div>
 
@@ -716,6 +842,7 @@ export default function App() {
             </div>
           </div>
         </section>
+
 
         {/* Landing Footer */}
         <footer className="landing-footer no-print">
