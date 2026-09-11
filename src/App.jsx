@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
 const initialEmptyState = {
@@ -117,13 +117,58 @@ export default function App() {
   const [hasGenerated, setHasGenerated] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [isDragActive, setIsDragActive] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState(null);
   const fileInputRef = useRef(null);
+
+  // Theme setup (Light & Dark Mode)
+  const [theme, setTheme] = useState(() => {
+    const saved = localStorage.getItem('kangcv_theme');
+    if (saved) return saved;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('kangcv_theme', theme);
+  }, [theme]);
+
+  // PWA beforeinstallprompt listener
+  useEffect(() => {
+    const handleBeforeInstall = (e) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+  }, []);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  };
+
+  const handleInstallApp = () => {
+    if (installPrompt) {
+      installPrompt.prompt();
+      installPrompt.userChoice.then((choice) => {
+        if (choice.outcome === 'accepted') {
+          showToast('Terima kasih telah menginstall Kang CV Mu!');
+        }
+        setInstallPrompt(null);
+      });
+    } else {
+      showToast(
+        'Untuk install di HP: buka menu browser (ikon titik tiga) lalu pilih "Tambahkan ke Layar Utama" / "Install App".'
+      );
+    }
+  };
 
   const showToast = (message) => {
     setToastMessage(message);
     setTimeout(() => {
       setToastMessage('');
-    }, 3200);
+    }, 3600);
   };
 
   const handlePersonalChange = (field, value) => {
@@ -394,20 +439,43 @@ export default function App() {
               <a href="#kontak">Kontak Pembuat</a>
             </nav>
 
-            <button
-              type="button"
-              className="btn btn-primary btn-sm"
-              onClick={() => setCurrentView('builder')}
-            >
-              Mulai Buat CV
-            </button>
+            <div className="landing-nav-actions">
+              {/* Theme Toggle */}
+              <button
+                type="button"
+                className="btn-theme"
+                onClick={toggleTheme}
+                aria-label="Ganti mode terang atau gelap"
+              >
+                {theme === 'light' ? '🌙 Mode Gelap' : '☀️ Mode Terang'}
+              </button>
+
+              {/* Install PWA Button */}
+              <button
+                type="button"
+                className="btn-install"
+                onClick={handleInstallApp}
+                title="Install aplikasi ke HP atau Komputer"
+              >
+                📱 Install App
+              </button>
+
+              {/* Enter Builder CTA */}
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => setCurrentView('builder')}
+              >
+                Mulai Buat CV
+              </button>
+            </div>
           </div>
         </header>
 
         {/* Hero Section */}
         <main id="beranda" className="landing-hero">
           <div className="hero-badge">
-            Aplikasi Generator CV ATS Indonesia
+            Platform CV ATS Indonesia
           </div>
 
           <h1 className="hero-title">
@@ -479,7 +547,7 @@ export default function App() {
               </div>
               <h3 className="feature-title">Format Single-Column Murni</h3>
               <p className="feature-desc">
-                Tata letak kolom tunggal tanpa tabel rumit, ikon tersembunyi, atau elemen grafis yang sering membuat sistem ATS gagal membaca data Anda.
+                Tata letak kolom tunggal tanpa tabel rumit, kolom ganda yang bertumpuk, atau elemen grafis yang sering membuat sistem ATS gagal membaca data Anda.
               </p>
             </div>
 
@@ -499,7 +567,7 @@ export default function App() {
               </div>
               <h3 className="feature-title">Privasi 100% Aman di Lokal</h3>
               <p className="feature-desc">
-                Data pribadi dan riwayat karir Anda tidak disimpan di server pihak ketiga atau basis data luar. Semuanya berjalan langsung di peramban Anda.
+                Data pribadi dan riwayat karir Anda tidak dikirimkan ke server pihak ketiga atau basis data luar. Seluruh proses berjalan langsung di peramban Anda.
               </p>
             </div>
 
@@ -509,7 +577,7 @@ export default function App() {
               </div>
               <h3 className="feature-title">Cadangan Berkas JSON</h3>
               <p className="feature-desc">
-                Dukung ekspor dan impor berkas JSON dengan fitur drag and drop. Simpan draf Anda ke komputer dan lanjutkan pengeditan kapan pun.
+                Dukung ekspor dan impor berkas JSON dengan fitur seret dan lepas. Simpan draf Anda ke perangkat dan lanjutkan pengeditan kapan pun.
               </p>
             </div>
           </div>
@@ -642,6 +710,16 @@ export default function App() {
           </div>
 
           <div className="header-actions">
+            {/* Theme Toggle inside Builder */}
+            <button
+              type="button"
+              className="btn-theme"
+              onClick={toggleTheme}
+              aria-label="Ganti mode tema"
+            >
+              {theme === 'light' ? '🌙 Gelap' : '☀️ Terang'}
+            </button>
+
             <button
               type="button"
               className="btn btn-outline"
@@ -690,7 +768,7 @@ export default function App() {
 
       {/* Main Split Interface */}
       <main className="app-container">
-        {/* Left Column: Form Builder */}
+        {/* Left Column: Form Builder (Full Width on Mobile) */}
         <section className="form-column no-print" aria-label="Formulir CV">
           {/* Card: Personal Information */}
           <div className="form-card">
@@ -1224,7 +1302,7 @@ export default function App() {
           </div>
         </section>
 
-        {/* Right Column: Live Preview (PDF) */}
+        {/* Right Column: Live Preview (Desktop Only, Hidden on Mobile via CSS) */}
         <section className="preview-column" aria-label="Live Preview Dokumen ATS">
           <div className="preview-bar no-print">
             <h2 className="preview-title">Live Preview (PDF)</h2>
@@ -1463,6 +1541,31 @@ export default function App() {
           </div>
         </section>
       </main>
+
+      {/* Floating Bottom Action Bar for Mobile Screens (no preview needed, direct actions) */}
+      <div className="mobile-bottom-bar no-print">
+        <button
+          type="button"
+          className="btn btn-outline"
+          onClick={handleLoadSample}
+        >
+          Load Contoh
+        </button>
+        <button
+          type="button"
+          className="btn btn-outline"
+          onClick={handleExportJSON}
+        >
+          Export JSON
+        </button>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={handleDownloadPDF}
+        >
+          Download PDF
+        </button>
+      </div>
 
       {/* Floating feedback notification */}
       {toastMessage && (

@@ -1,0 +1,25 @@
+{
+  "name": "Kang CV Mu - CV ATS Generator",
+  "short_name": "Kang CV Mu",
+  "description": "Aplikasi Web Generator CV ATS profesional, cepat, dan 1-klik unduh PDF",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -2,13 +2,26 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="CV Generator ATS profesional. Buat resume standar ATS 1-klik PDF secara instan dan aman di browser." />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%230F172A%22/><text x=%2250%22 y=%2266%22 font-size=%2246%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22 font-family=%22system-ui,sans-serif%22>CV</text></svg>" />
-    <title>Kang CV Mu - Web-based 1-Click PDF</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <meta name="theme-color" content="#2563eb" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Kang CV Mu" />
+    <meta name="description" content="Kang CV Mu: Aplikasi Web Generator CV ATS profesional. Buat resume standar ATS 1-klik PDF secara instan dan aman di browser." />
+    <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+    <link rel="apple-touch-icon" href="./icon-192.png" />
+    <link rel="manifest" href="./manifest.json" />
+    <title>Kang CV Mu - Generator CV ATS 1-Klik PDF</title>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js').catch(function() {});
+        });
+      }
+    </script>
   </body>
 </html>
