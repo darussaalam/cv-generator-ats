@@ -373,8 +373,8 @@ export default function App() {
               CV
             </div>
             <div className="brand-info">
-              <h1>CV Generator ATS</h1>
-              <p>Format ATS Standar • Web-based • 1-Klik PDF (karya Malik)</p>
+              <h1>Kang CV Mu</h1>
+              <p>Format ATS Standar • Web-based • 1-Klik PDF</p>
             </div>
           </div>
 
