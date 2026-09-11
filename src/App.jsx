@@ -112,6 +112,7 @@ const sampleData = {
 };
 
 export default function App() {
+  const [currentView, setCurrentView] = useState('landing');
   const [data, setData] = useState(initialEmptyState);
   const [hasGenerated, setHasGenerated] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -264,6 +265,13 @@ export default function App() {
     showToast('Data contoh berhasil dimuat.');
   };
 
+  const handleLoadSampleAndOpenBuilder = () => {
+    setData(JSON.parse(JSON.stringify(sampleData)));
+    setHasGenerated(true);
+    setCurrentView('builder');
+    showToast('Data contoh dimuat ke editor CV.');
+  };
+
   const handleExportJSON = () => {
     const blob = new Blob([JSON.stringify(data, null, 2)], {
       type: 'application/json',
@@ -348,13 +356,11 @@ export default function App() {
       setHasGenerated(true);
     }
 
-    // Native browser print dialog with dedicated print CSS
     setTimeout(() => {
       window.print();
     }, 150);
   };
 
-  // Helper to parse line-broken bullets
   const parseBullets = (bulletsText) => {
     if (!bulletsText) return [];
     return bulletsText
@@ -363,12 +369,269 @@ export default function App() {
       .filter((line) => line.length > 0);
   };
 
+  // ==========================================
+  // VIEW 1: LANDING PAGE
+  // ==========================================
+  if (currentView === 'landing') {
+    return (
+      <div className="landing-wrapper">
+        {/* Landing Navbar */}
+        <header className="landing-nav no-print">
+          <div className="landing-nav-inner">
+            <div className="header-brand-group">
+              <div className="brand-icon" aria-hidden="true">
+                CV
+              </div>
+              <div className="brand-info">
+                <h1>Kang CV Mu</h1>
+                <p>Format ATS Standar • Web-based • 1-Klik PDF</p>
+              </div>
+            </div>
+
+            <nav className="landing-menu" aria-label="Menu Utama">
+              <a href="#beranda">Beranda</a>
+              <a href="#fitur">Fitur ATS</a>
+              <a href="#kontak">Kontak Pembuat</a>
+            </nav>
+
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={() => setCurrentView('builder')}
+            >
+              Mulai Buat CV
+            </button>
+          </div>
+        </header>
+
+        {/* Hero Section */}
+        <main id="beranda" className="landing-hero">
+          <div className="hero-badge">
+            Aplikasi Generator CV ATS Indonesia
+          </div>
+
+          <h1 className="hero-title">
+            Buat CV Standar ATS Profesional, Cepat dan Bebas Ribet
+          </h1>
+
+          <p className="hero-subtitle">
+            Rancang resume berformat standar Applicant Tracking System (ATS) langsung di peramban. 100% gratis, 1-klik unduh PDF vektor A4 berkualitas tinggi, dan data Anda tersimpan aman secara lokal tanpa perlu registrasi akun.
+          </p>
+
+          <div className="hero-ctas">
+            <button
+              type="button"
+              className="btn btn-primary btn-lg"
+              onClick={() => setCurrentView('builder')}
+            >
+              Mulai Buat CV Sekarang
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline btn-lg"
+              onClick={handleLoadSampleAndOpenBuilder}
+            >
+              Buka dengan Data Contoh
+            </button>
+          </div>
+
+          {/* Frosted Glass Hero Showcase */}
+          <div className="hero-showcase">
+            <div className="showcase-header">
+              <div className="showcase-tag-list">
+                <span className="showcase-tag">Single-Column ATS</span>
+                <span className="showcase-tag">100% Vektor PDF</span>
+                <span className="showcase-tag">Privasi Lokal</span>
+              </div>
+              <span>Live Preview Resume</span>
+            </div>
+
+            <div className="showcase-paper">
+              <h2 className="showcase-name">ALYA PRATIWI SARI</h2>
+              <p className="showcase-role">
+                UI/UX Designer | Frontend Developer | Design Systems
+              </p>
+              <p className="showcase-contact">
+                Jakarta, Indonesia | alya.pratiwi.sari@example.com | +62 811-9876-5432 | LinkedIn | Portfolio
+              </p>
+              <hr className="showcase-divider" />
+              <h3 className="showcase-sec-title">PROFESSIONAL SUMMARY</h3>
+              <p className="showcase-body">
+                UI/UX Designer and Frontend Developer with 5+ years crafting user-centered digital products, design systems, and performant web interfaces. Experienced in Figma, Design Thinking, React, Next.js, and WCAG AA accessibility standards.
+              </p>
+            </div>
+          </div>
+        </main>
+
+        {/* Features Section */}
+        <section id="fitur" className="landing-section">
+          <div className="section-header">
+            <h2 className="section-title">Keunggulan Kang CV Mu</h2>
+            <p className="section-subtitle">
+              Dirancang dengan standar teknis yang mempermudah sistem ATS perusahaan membaca pengalaman dan keahlian Anda tanpa kesalahan parsing.
+            </p>
+          </div>
+
+          <div className="features-grid">
+            <div className="feature-card">
+              <div className="feature-icon-badge" aria-hidden="true">
+                1
+              </div>
+              <h3 className="feature-title">Format Single-Column Murni</h3>
+              <p className="feature-desc">
+                Tata letak kolom tunggal tanpa tabel rumit, ikon tersembunyi, atau elemen grafis yang sering membuat sistem ATS gagal membaca data Anda.
+              </p>
+            </div>
+
+            <div className="feature-card">
+              <div className="feature-icon-badge" aria-hidden="true">
+                2
+              </div>
+              <h3 className="feature-title">Ekspor PDF Vektor A4</h3>
+              <p className="feature-desc">
+                Hasil cetak berformat A4 dengan teks asli yang dapat diseleksi dan dibaca mesin pemindai dokumen, bukan tangkapan layar gambar raster.
+              </p>
+            </div>
+
+            <div className="feature-card">
+              <div className="feature-icon-badge" aria-hidden="true">
+                3
+              </div>
+              <h3 className="feature-title">Privasi 100% Aman di Lokal</h3>
+              <p className="feature-desc">
+                Data pribadi dan riwayat karir Anda tidak disimpan di server pihak ketiga atau basis data luar. Semuanya berjalan langsung di peramban Anda.
+              </p>
+            </div>
+
+            <div className="feature-card">
+              <div className="feature-icon-badge" aria-hidden="true">
+                4
+              </div>
+              <h3 className="feature-title">Cadangan Berkas JSON</h3>
+              <p className="feature-desc">
+                Dukung ekspor dan impor berkas JSON dengan fitur drag and drop. Simpan draf Anda ke komputer dan lanjutkan pengeditan kapan pun.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Creator Profile & Contact Section */}
+        <section id="kontak" className="creator-section">
+          <div className="creator-inner">
+            <div className="creator-card-main">
+              <div className="creator-header-area">
+                <div className="creator-avatar" aria-hidden="true">
+                  D
+                </div>
+                <div className="creator-meta">
+                  <h3>Darussalam</h3>
+                  <p>Pengembang Kang CV Mu</p>
+                </div>
+              </div>
+
+              <p className="creator-intro">
+                Halo! Aplikasi <strong>Kang CV Mu</strong> ini saya kembangkan untuk membantu rekan-rekan pencari kerja di Indonesia agar bisa membuat CV berkualitas standar ATS secara gratis, cepat, dan tanpa ribet. Jika Anda memiliki saran perbaikan, pertanyaan teknis, atau ingin terhubung langsung, silakan hubungi saya melalui kontak resmi berikut:
+              </p>
+
+              <div className="contacts-grid">
+                {/* WhatsApp Contact */}
+                <div className="contact-item-card">
+                  <div>
+                    <span className="contact-channel-title">WhatsApp Resmi</span>
+                    <p className="contact-channel-val">087725716394</p>
+                  </div>
+                  <a
+                    href="https://wa.me/6287725716394"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn btn-outline btn-sm"
+                  >
+                    Chat via WhatsApp
+                  </a>
+                </div>
+
+                {/* Email Contact */}
+                <div className="contact-item-card">
+                  <div>
+                    <span className="contact-channel-title">Email Langsung</span>
+                    <p className="contact-channel-val">drslm312@gmail.com</p>
+                  </div>
+                  <a
+                    href="mailto:drslm312@gmail.com"
+                    className="btn btn-outline btn-sm"
+                  >
+                    Kirim Email
+                  </a>
+                </div>
+
+                {/* Instagram Contact */}
+                <div className="contact-item-card">
+                  <div>
+                    <span className="contact-channel-title">Instagram Pribadi</span>
+                    <p className="contact-channel-val">@drslm_22</p>
+                  </div>
+                  <a
+                    href="https://instagram.com/drslm_22"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn btn-outline btn-sm"
+                  >
+                    Kunjungi Instagram
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Landing Footer */}
+        <footer className="landing-footer no-print">
+          <p>© 2026 Kang CV Mu. Dikembangkan oleh Darussalam.</p>
+          <div className="footer-links">
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={() => setCurrentView('builder')}
+            >
+              Buka Builder CV
+            </button>
+            <a href="https://wa.me/6287725716394" target="_blank" rel="noreferrer">
+              WhatsApp
+            </a>
+            <a href="mailto:drslm312@gmail.com">Email</a>
+            <a href="https://instagram.com/drslm_22" target="_blank" rel="noreferrer">
+              Instagram
+            </a>
+          </div>
+        </footer>
+
+        {/* Toast alert */}
+        {toastMessage && (
+          <div className="toast-msg" role="status" aria-live="polite">
+            {toastMessage}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ==========================================
+  // VIEW 2: CV GENERATOR BUILDER WORKSPACE
+  // ==========================================
   return (
     <div>
       {/* Top Application Header */}
       <header className="app-header no-print">
         <div className="header-inner">
-          <div className="header-brand">
+          <div className="header-brand-group">
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={() => setCurrentView('landing')}
+              title="Kembali ke Halaman Beranda"
+            >
+              ← Beranda
+            </button>
             <div className="brand-icon" aria-hidden="true">
               CV
             </div>
@@ -978,7 +1241,7 @@ export default function App() {
           >
             <div id="resume-print-area" className="ats-paper">
               {!hasGenerated ? (
-                /* Empty state as seen in original application */
+                /* Empty state */
                 <div className="empty-preview no-print">
                   <p className="empty-preview-text">Belum ada preview.</p>
                   <p className="empty-preview-subtext">
