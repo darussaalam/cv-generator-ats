@@ -297,6 +297,31 @@ function ChevronDownIcon({ isOpen }) {
   );
 }
 
+function MagicWandIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="m15 4-2 2" />
+      <path d="m15 9-2-2" />
+      <path d="M19 13 8 2" />
+      <path d="M22 10 11 1" />
+      <path d="m3 21 9-9" />
+      <path d="m12.5 15.5 2 2" />
+      <path d="m2 16 2-2" />
+      <path d="m6 20 2-2" />
+    </svg>
+  );
+}
+
 export default function App() {
   const [currentView, setCurrentView] = useState('landing');
   const [data, setData] = useState(initialEmptyState);
@@ -311,6 +336,24 @@ export default function App() {
   const [proPreset, setProPreset] = useState('executive'); // 'executive' | 'modern' | 'freshgrad'
   const [showPackageModal, setShowPackageModal] = useState(false);
   const [showAuditDrawer, setShowAuditDrawer] = useState(true);
+
+  // AI Assistant States
+  const [aiModal, setAiModal] = useState({
+    isOpen: false,
+    title: '',
+    section: '',
+    targetId: null,
+    meta: {},
+    originalText: '',
+    suggestedText: '',
+    tone: 'impact', // 'impact' | 'technical' | 'concise'
+    isGenerating: false,
+  });
+  const [geminiApiKey, setGeminiApiKey] = useState(() => {
+    return localStorage.getItem('kangcv_gemini_key') || '';
+  });
+  const [showAiSettings, setShowAiSettings] = useState(false);
+  const [tempApiKey, setTempApiKey] = useState('');
 
   // Theme setup (Light & Dark Mode)
   const [theme, setTheme] = useState(() => {
@@ -871,6 +914,265 @@ WhatsApp/Telepon: ${phone}${linkedin ? `\nLinkedIn: ${linkedin}` : ''}${portfoli
   };
 
   // ==========================================
+  // AI ASSISTANT & CONTENT OPTIMIZER ENGINE
+  // ==========================================
+  const callGeminiAPI = async (promptText) => {
+    if (!geminiApiKey.trim()) return null;
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey.trim()}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }] }],
+            generationConfig: {
+              temperature: 0.4,
+              maxOutputTokens: 500,
+            },
+          }),
+        }
+      );
+      if (!response.ok) return null;
+      const json = await response.json();
+      const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (text) {
+        return text
+          .trim()
+          .replace(/\u2014/g, ':')
+          .replace(/^```[a-z]*\n/i, '')
+          .replace(/\n```$/, '');
+      }
+    } catch (e) {
+      console.warn('Gemini API call skipped, using built-in smart engine:', e);
+    }
+    return null;
+  };
+
+  const generateLocalAIPolish = (section, rawText, meta = {}, tone = 'impact') => {
+    const text = (rawText || '').trim();
+
+    if (section === 'headline') {
+      const base = text || data.personal.headline || 'Spesialis Profesional';
+      const cleanBase = base.split('|')[0].trim() || 'Software Engineer';
+      const skillsPart = data.skills.technical
+        ? data.skills.technical.split(',').slice(0, 3).map((s) => s.trim()).join(', ')
+        : 'Sistem Terintegrasi, Analisis Data & Eksekusi Solusi';
+
+      if (tone === 'technical') {
+        return `${cleanBase} | ${skillsPart} | Efisiensi & Arsitektur Sistem`;
+      }
+      if (tone === 'concise') {
+        return `${cleanBase} | ${skillsPart}`;
+      }
+      return `${cleanBase} | ${skillsPart} | Berorientasi pada Dampak Bisnis`;
+    }
+
+    if (section === 'summary') {
+      const headline = data.personal.headline || 'Profesional Berdedikasi';
+      const skills = data.skills.technical
+        ? data.skills.technical.split(',').slice(0, 4).map((s) => s.trim()).join(', ')
+        : 'keahlian teknis dan manajemen proyek';
+
+      if (text.length > 30) {
+        if (tone === 'technical') {
+          return `${headline} dengan fokus mendalam pada implementasi standar teknis modern dan penguasaan ${skills}. Berpengalaman merancang arsitektur alur kerja yang terstruktur, meminimalkan latensi proses hingga 30%, serta memastikan kepatuhan standar kualitas industri. Terbiasa memimpin kolaborasi lintas divisi untuk menghadirkan solusi komputasi yang tangguh dan terukur.`;
+        }
+        if (tone === 'concise') {
+          return `${headline} dengan penguasaan kuat pada ${skills}. Terbukti mampu mengeksekusi proyek tepat waktu dengan peningkatan efisiensi proses kerja hingga 25%. Siap berkontribusi secara langsung dalam mendukung target operasional dan pertumbuhan tim.`;
+        }
+        return `${headline} dengan pengalaman terbukti dalam mendorong efisiensi operasional dan pengembangan solusi berbasis ${skills}. Memiliki rekam jejak dalam meningkatkan produktivitas tim hingga 35% melalui pendekatan kerja berbasis data dan perbaikan berkelanjutan. Berkomitmen kuat menghadirkan nilai nyata bagi pertumbuhan perusahaan melalui kepemimpinan kolaboratif.`;
+      }
+
+      return `${headline} dengan keahlian teruji dalam ${skills}. Berpengalaman mengelola proyek dari inisiasi hingga evaluasi dengan fokus pada pencapaian terukur dan efisiensi waktu kerja. Memiliki etos kerja terstruktur, kemampuan komunikasi aktif, dan dedikasi tinggi dalam mencapai target strategis perusahaan.`;
+    }
+
+    if (section === 'bullets') {
+      const role = meta.position || 'Profesional';
+      const company = meta.company ? `di ${meta.company}` : '';
+
+      const lines = text
+        ? text.split('\n').map((l) => l.trim()).filter((l) => l.length > 0)
+        : [];
+
+      if (lines.length === 0) {
+        return `Memimpin inisiatif kunci ${company} sebagai ${role}, meningkatkan efisiensi alur kerja operasional sebesar 30% melalui perbaikan proses berkala.\nMerancang dan menerapkan strategi kerja terpadu bersama tim lintas fungsi, memastikan seluruh target diselesaikan tepat waktu dengan tingkat akurasi 98%.\nMenganalisis metrik performa secara rutin dan menyusun rekomendasi tindakan yang memangkas waktu siklus pekerjaan hingga 25%.`;
+      }
+
+      const powerVerbs = [
+        'Mengembangkan', 'Memimpin', 'Merancang', 'Mengoptimalkan',
+        'Mengintegrasikan', 'Mengelola', 'Mengeksekusi', 'Menganalisis'
+      ];
+
+      return lines
+        .map((line, idx) => {
+          let clean = line.replace(/^[\s*\-•>·\d.)]+/, '').trim();
+          if (!clean) return '';
+          clean = clean.replace(
+            /^(bertanggung jawab untuk|bertanggung jawab atas|tugasnya|bantu|membantu|mengerjakan|pekerjaan saya|ikut serta dalam)\s*/i,
+            ''
+          );
+          clean = clean.charAt(0).toUpperCase() + clean.slice(1);
+
+          const startsWithVerb = powerVerbs.some((v) =>
+            clean.toLowerCase().startsWith(v.toLowerCase().slice(0, 5))
+          );
+          const verb = powerVerbs[idx % powerVerbs.length];
+          const hasMetric = /\b(\d+%|\d+x|\d+\s*(orang|user|klien|juta)|rp\.?\s*\d+|\d{2,})\b/i.test(
+            clean
+          );
+
+          let polished = clean;
+          if (!startsWithVerb) {
+            polished = `${verb} ${clean.charAt(0).toLowerCase() + clean.slice(1)}`;
+          }
+
+          if (!hasMetric) {
+            if (tone === 'technical') {
+              polished += ', meningkatkan efisiensi teknis dan waktu respon sistem hingga 30%';
+            } else if (tone === 'concise') {
+              polished += ' dengan tingkat ketercapaian target 100%';
+            } else {
+              polished += ', menghasilkan peningkatan efisiensi proses kerja hingga 25%';
+            }
+          }
+
+          return polished.replace(/\.\s*$/, '') + '.';
+        })
+        .filter(Boolean)
+        .join('\n');
+    }
+
+    if (section === 'project') {
+      const name = meta.name || 'Proyek Unggulan';
+      const role = meta.role || 'Lead Contributor';
+      const cleanDesc = text
+        ? text.replace(/^[\s*\-•>·]+/, '').trim()
+        : 'Pengembangan arsitektur terintegrasi';
+
+      if (tone === 'technical') {
+        return `Merancang dan mengimplementasikan arsitektur teknis ${name} sebagai ${role}, mengintegrasikan modul performa tinggi yang memangkas waktu pemrosesan data hingga 35%.`;
+      }
+      if (tone === 'concise') {
+        return `Mengeksekusi ${name} sebagai ${role}, menyelesaikan seluruh ruang lingkup pekerjaan tepat waktu dengan tingkat kepuasan pengguna 95%.`;
+      }
+      return `Memimpin perancangan dan eksekusi ${name} sebagai ${role}, mentransformasikan ${
+        cleanDesc.charAt(0).toLowerCase() + cleanDesc.slice(1)
+      } menjadi solusi terukur yang meningkatkan efisiensi operasional hingga 30%.`;
+    }
+
+    return text;
+  };
+
+  const handleTriggerAIPolish = async (
+    section,
+    currentText,
+    targetId = null,
+    meta = {}
+  ) => {
+    const titles = {
+      headline: 'Poles Headline Profesional (AI)',
+      summary: 'Poles Ringkasan Profil STAR (AI)',
+      bullets: 'Poles Butir Pengalaman Kerja STAR (AI)',
+      project: 'Poles Deskripsi Proyek Unggulan (AI)',
+    };
+
+    setAiModal({
+      isOpen: true,
+      title: titles[section] || 'Poles Konten AI',
+      section,
+      targetId,
+      meta,
+      originalText: currentText || '',
+      suggestedText: 'Sedang menganalisis dan memoles naskah Anda...',
+      tone: 'impact',
+      isGenerating: true,
+    });
+
+    let result = null;
+    if (geminiApiKey.trim()) {
+      let prompt = '';
+      if (section === 'headline') {
+        prompt = `You are an elite executive ATS resume consultant. Rewrite this resume headline in Indonesian to be high-impact, professional, and ATS keyword-rich: "${currentText}". Keep it under 15 words. Return ONLY the rewritten text without quotation marks or em dashes.`;
+      } else if (section === 'summary') {
+        prompt = `You are an executive ATS resume consultant. Rewrite this professional summary in Indonesian following the 3-sentence recruiter formula (Identity + STAR Impact + Value Proposition): "${currentText}". Strict rule: DO NOT use any em dash characters. Return ONLY the rewritten paragraph without commentary.`;
+      } else if (section === 'bullets') {
+        prompt = `You are an executive ATS resume consultant. Transform these bullet points for ${
+          meta.position || 'the role'
+        } into strict STAR bullet points in Indonesian with strong active power verbs and quantifiable metrics: \n${currentText}\nStrict rule: DO NOT use any em dash characters. 1 line per bullet point. Return ONLY the bullets without conversational filler.`;
+      } else if (section === 'project') {
+        prompt = `You are an executive ATS resume consultant. Rewrite this project description for ${
+          meta.name || 'a project'
+        } in Indonesian to highlight role, technology, and measurable outcome: "${currentText}". DO NOT use any em dash characters. Return ONLY the rewritten text.`;
+      }
+      result = await callGeminiAPI(prompt);
+    }
+
+    if (!result) {
+      result = generateLocalAIPolish(section, currentText, meta, 'impact');
+    }
+
+    setAiModal((prev) => ({
+      ...prev,
+      suggestedText: result,
+      isGenerating: false,
+    }));
+  };
+
+  const handleChangeAiTone = (newTone) => {
+    setAiModal((prev) => ({
+      ...prev,
+      tone: newTone,
+      isGenerating: true,
+      suggestedText: 'Menerapkan penyesuaian gaya...',
+    }));
+
+    setTimeout(() => {
+      const result = generateLocalAIPolish(
+        aiModal.section,
+        aiModal.originalText,
+        aiModal.meta,
+        newTone
+      );
+      setAiModal((prev) => ({
+        ...prev,
+        suggestedText: result,
+        isGenerating: false,
+      }));
+    }, 180);
+  };
+
+  const handleApplyAiSuggestion = () => {
+    const { section, targetId, suggestedText } = aiModal;
+    if (!suggestedText) return;
+
+    if (section === 'headline') {
+      handlePersonalChange('headline', suggestedText);
+    } else if (section === 'summary') {
+      handleSummaryChange(suggestedText);
+    } else if (section === 'bullets') {
+      handleExperienceChange(targetId, 'bullets', suggestedText);
+    } else if (section === 'project') {
+      handleProjectChange(targetId, 'description', suggestedText);
+    }
+
+    setHasGenerated(true);
+    setAiModal((prev) => ({ ...prev, isOpen: false }));
+    showToast('Polesan AI berhasil diterapkan ke formulir CV Anda!');
+  };
+
+  const handleSaveGeminiKey = (key) => {
+    setGeminiApiKey(key.trim());
+    localStorage.setItem('kangcv_gemini_key', key.trim());
+    setShowAiSettings(false);
+    showToast(
+      key.trim()
+        ? 'Kunci Gemini API berhasil disimpan di peramban!'
+        : 'Kunci Gemini dihapus. Kembali ke mesin lokal bawaan.'
+    );
+  };
+
+  // ==========================================
   // VIEW 1: LANDING PAGE
   // ==========================================
   if (currentView === 'landing') {
@@ -1407,6 +1709,18 @@ WhatsApp/Telepon: ${phone}${linkedin ? `\nLinkedIn: ${linkedin}` : ''}${portfoli
                 <span>MODE CV PRO</span>
               </span>
               <span className="pro-sub-note">Standar ATS Terverifikasi</span>
+              <button
+                type="button"
+                className="btn-ai-pill"
+                onClick={() => {
+                  setTempApiKey(geminiApiKey);
+                  setShowAiSettings(true);
+                }}
+                title="Pengaturan AI: Gunakan mesin offline bawaan atau sambungkan Kunci Gemini API"
+              >
+                <MagicWandIcon />
+                <span>{geminiApiKey ? 'Gemini AI Aktif' : 'AI Offline Aktif'}</span>
+              </button>
             </div>
 
             <div className="preset-selector" role="group" aria-label="Pilihan Preset Format ATS">
@@ -1565,9 +1879,22 @@ WhatsApp/Telepon: ${phone}${linkedin ? `\nLinkedIn: ${linkedin}` : ''}${portfoli
             </div>
 
             <div className="field-group">
-              <label className="field-label" htmlFor="headline">
-                Headline
-              </label>
+              <div className="field-label-row">
+                <label className="field-label" htmlFor="headline">
+                  Headline
+                </label>
+                <button
+                  type="button"
+                  className="btn-ai-field"
+                  onClick={() =>
+                    handleTriggerAIPolish('headline', data.personal.headline)
+                  }
+                  title="Poles headline dengan AI agar ramah ATS dan menarik minat HRD"
+                >
+                  <MagicWandIcon />
+                  <span>Poles AI</span>
+                </button>
+              </div>
               <input
                 id="headline"
                 className="form-input"
@@ -1688,6 +2015,15 @@ WhatsApp/Telepon: ${phone}${linkedin ? `\nLinkedIn: ${linkedin}` : ''}${portfoli
           <div className="form-card">
             <div className="card-header">
               <h2 className="card-title">Professional Summary</h2>
+              <button
+                type="button"
+                className="btn-ai-field"
+                onClick={() => handleTriggerAIPolish('summary', data.summary)}
+                title="Poles ringkasan profesional dengan formula 3 kalimat HRD"
+              >
+                <MagicWandIcon />
+                <span>Poles AI (STAR)</span>
+              </button>
             </div>
             <div className="field-group">
               <label className="field-label" htmlFor="summary">
@@ -1763,7 +2099,7 @@ WhatsApp/Telepon: ${phone}${linkedin ? `\nLinkedIn: ${linkedin}` : ''}${portfoli
                       onChange={(e) =>
                         handleExperienceChange(exp.id, 'company', e.target.value)
                       }
-                      placeholder="Nama Perusahaan"
+                      placeholder="PT Maju Bersama"
                     />
                   </div>
                 </div>
@@ -1802,9 +2138,25 @@ WhatsApp/Telepon: ${phone}${linkedin ? `\nLinkedIn: ${linkedin}` : ''}${portfoli
                 </div>
 
                 <div className="field-group">
-                  <label className="field-label" htmlFor={`exp-bul-${exp.id}`}>
-                    Bullets (1 baris = 1 bullet)
-                  </label>
+                  <div className="field-label-row">
+                    <label className="field-label" htmlFor={`exp-bul-${exp.id}`}>
+                      Pencapaian &amp; Tanggung Jawab (1 baris = 1 butir)
+                    </label>
+                    <button
+                      type="button"
+                      className="btn-ai-field"
+                      onClick={() =>
+                        handleTriggerAIPolish('bullets', exp.bullets, exp.id, {
+                          position: exp.position,
+                          company: exp.company,
+                        })
+                      }
+                      title="Ubah butir pengalaman menjadi format STAR dengan kata kerja aktif dan metrik terukur"
+                    >
+                      <MagicWandIcon />
+                      <span>Poles AI (STAR)</span>
+                    </button>
+                  </div>
                   <textarea
                     id={`exp-bul-${exp.id}`}
                     className="form-textarea"
@@ -2057,9 +2409,25 @@ WhatsApp/Telepon: ${phone}${linkedin ? `\nLinkedIn: ${linkedin}` : ''}${portfoli
                 </div>
 
                 <div className="field-group">
-                  <label className="field-label" htmlFor={`proj-desc-${proj.id}`}>
-                    Deskripsi Singkat &amp; Capaian
-                  </label>
+                  <div className="field-label-row">
+                    <label className="field-label" htmlFor={`proj-desc-${proj.id}`}>
+                      Deskripsi Singkat &amp; Capaian
+                    </label>
+                    <button
+                      type="button"
+                      className="btn-ai-field"
+                      onClick={() =>
+                        handleTriggerAIPolish('project', proj.description, proj.id, {
+                          name: proj.name,
+                          role: proj.role,
+                        })
+                      }
+                      title="Poles deskripsi proyek dengan AI agar menonjolkan peran dan capaian nyata"
+                    >
+                      <MagicWandIcon />
+                      <span>Poles AI</span>
+                    </button>
+                  </div>
                   <textarea
                     id={`proj-desc-${proj.id}`}
                     className="form-textarea"
@@ -2618,6 +2986,243 @@ WhatsApp/Telepon: ${phone}${linkedin ? `\nLinkedIn: ${linkedin}` : ''}${portfoli
               >
                 <PackageIcon />
                 <span>Unduh Seluruh Paket (.ZIP)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal AI Content Optimizer (Before vs After) */}
+      {aiModal.isOpen && (
+        <div
+          className="modal-overlay no-print"
+          onClick={() => setAiModal((prev) => ({ ...prev, isOpen: false }))}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-ai-title"
+        >
+          <div
+            className="modal-card modal-ai-card"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <div className="modal-title-group">
+                <div className="modal-icon-badge badge-ai" aria-hidden="true">
+                  <MagicWandIcon />
+                </div>
+                <div>
+                  <h3 id="modal-ai-title" className="modal-title">
+                    {aiModal.title}
+                  </h3>
+                  <p className="modal-subtitle">
+                    Optimasi cerdas berbasis formula STAR dan standar pemindaian HRD
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="btn-modal-close"
+                onClick={() => setAiModal((prev) => ({ ...prev, isOpen: false }))}
+                aria-label="Tutup jendela polesan AI"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+
+            <div className="modal-body">
+              {/* Tone Selection Tabs */}
+              <div className="ai-tone-bar">
+                <span className="ai-tone-label">Pilih Karakter Teks:</span>
+                <div className="ai-tone-buttons">
+                  <button
+                    type="button"
+                    className={`btn-ai-tone ${aiModal.tone === 'impact' ? 'active' : ''}`}
+                    onClick={() => handleChangeAiTone('impact')}
+                  >
+                    Dampak &amp; Hasil (Rekomendasi)
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn-ai-tone ${aiModal.tone === 'technical' ? 'active' : ''}`}
+                    onClick={() => handleChangeAiTone('technical')}
+                  >
+                    Spesialis Teknis
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn-ai-tone ${aiModal.tone === 'concise' ? 'active' : ''}`}
+                    onClick={() => handleChangeAiTone('concise')}
+                  >
+                    Ringkas &amp; Terpadu
+                  </button>
+                </div>
+              </div>
+
+              {/* Side-by-side comparison */}
+              <div className="ai-compare-grid">
+                <div className="ai-box ai-box-before">
+                  <div className="ai-box-header">
+                    <span className="ai-box-tag tag-before">Teks Asli Anda</span>
+                  </div>
+                  <div className="ai-box-content">
+                    {aiModal.originalText ? (
+                      <p>{aiModal.originalText}</p>
+                    ) : (
+                      <em className="text-muted">(Kolom sebelumnya masih kosong)</em>
+                    )}
+                  </div>
+                </div>
+
+                <div className="ai-box ai-box-after">
+                  <div className="ai-box-header">
+                    <span className="ai-box-tag tag-after">
+                      <MagicWandIcon /> Hasil Polesan AI Pro
+                    </span>
+                  </div>
+                  <div className="ai-box-content">
+                    {aiModal.isGenerating ? (
+                      <div className="ai-loading-state">
+                        <span className="ai-spinner" aria-hidden="true"></span>
+                        <p>{aiModal.suggestedText}</p>
+                      </div>
+                    ) : (
+                      <textarea
+                        className="ai-editable-textarea"
+                        rows={6}
+                        value={aiModal.suggestedText}
+                        onChange={(e) =>
+                          setAiModal((prev) => ({
+                            ...prev,
+                            suggestedText: e.target.value,
+                          }))
+                        }
+                        title="Anda dapat menyunting teks ini secara bebas sebelum menerapkan"
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="ai-note-box">
+                <p>
+                  <strong>Tips HRD:</strong> Teks hasil polesan AI menggunakan struktur kata kerja aktif dan estimasi metrik kuantitatif. Anda dapat menyesuaikan angka persentase atau nominal agar 100% akurat dengan pencapaian riil Anda.
+                </p>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => setAiModal((prev) => ({ ...prev, isOpen: false }))}
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                className="btn btn-ai-apply"
+                disabled={aiModal.isGenerating || !aiModal.suggestedText}
+                onClick={handleApplyAiSuggestion}
+              >
+                <MagicWandIcon />
+                <span>Terapkan ke CV Saya</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Pengaturan Kunci Gemini API (Opsional) */}
+      {showAiSettings && (
+        <div
+          className="modal-overlay no-print"
+          onClick={() => setShowAiSettings(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-settings-title"
+        >
+          <div
+            className="modal-card modal-settings-card"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <div className="modal-title-group">
+                <div className="modal-icon-badge badge-ai" aria-hidden="true">
+                  <MagicWandIcon />
+                </div>
+                <div>
+                  <h3 id="modal-settings-title" className="modal-title">
+                    Pengaturan Asisten AI
+                  </h3>
+                  <p className="modal-subtitle">
+                    Mesin bawaan offline aktif, opsi sambungkan Google Gemini API
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="btn-modal-close"
+                onClick={() => setShowAiSettings(false)}
+                aria-label="Tutup jendela pengaturan AI"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <p className="modal-intro">
+                Secara default, Kang CV Mu menggunakan <strong>Mesin AI Cerdas Bawaan</strong> yang bekerja 100% lokal, cepat, dan tanpa biaya. Jika Anda ingin menggunakan model bahasa generatif Google Gemini 1.5 Flash untuk analisis mendalam, Anda dapat memasukkan kunci API gratis Anda di bawah ini:
+              </p>
+
+              <div className="field-group">
+                <label className="field-label" htmlFor="geminiApiKey">
+                  Google Gemini API Key (Opsional)
+                </label>
+                <input
+                  id="geminiApiKey"
+                  className="form-input"
+                  type="password"
+                  value={tempApiKey}
+                  onChange={(e) => setTempApiKey(e.target.value)}
+                  placeholder="AIzaSy..."
+                />
+                <span className="field-hint">
+                  Kunci API hanya disimpan di peramban (localStorage) Anda dan tidak dikirim ke server Kang CV Mu. Dapatkan gratis di{' '}
+                  <a
+                    href="https://aistudio.google.com/app/apikey"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Google AI Studio
+                  </a>
+                  .
+                </span>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              {geminiApiKey && (
+                <button
+                  type="button"
+                  className="btn btn-outline btn-sm"
+                  onClick={() => handleSaveGeminiKey('')}
+                >
+                  Hapus Kunci (Gunakan Offline)
+                </button>
+              )}
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => setShowAiSettings(false)}
+              >
+                Tutup
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => handleSaveGeminiKey(tempApiKey)}
+              >
+                Simpan Pengaturan
               </button>
             </div>
           </div>
