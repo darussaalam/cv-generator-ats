@@ -178,29 +178,36 @@
   color: var(--primary);
 }
 
-/* Theme Toggle Button (Glassmorphic) */
-.btn-theme {
+/* Cozy Theme Toggle Button (Icon-Only Cozy Glassmorphic) */
+.btn-theme-cozy {
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  min-height: 36px;
-  padding: 6px 12px;
+  border-radius: 50%;
   background: var(--card-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border-input);
-  border-radius: var(--radius-sm);
   color: var(--text-secondary);
-  font-size: 0.8125rem;
-  font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
-.btn-theme:hover {
+.btn-theme-cozy:hover {
+  background: var(--input-bg);
   border-color: var(--primary);
-  color: var(--text-primary);
+  color: var(--primary);
+  transform: rotate(15deg) scale(1.05);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+
+.btn-theme-cozy:active {
+  transform: scale(0.95);
 }
 
 /* PWA Install Button */

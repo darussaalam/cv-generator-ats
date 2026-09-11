@@ -111,6 +111,69 @@ const sampleData = {
   ],
 };
 
+function SunIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="1" x2="12" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </svg>
+  );
+}
+
+function MoonIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  );
+}
+
+function PhoneIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+      <line x1="12" y1="18" x2="12.01" y2="18" />
+    </svg>
+  );
+}
+
 export default function App() {
   const [currentView, setCurrentView] = useState('landing');
   const [data, setData] = useState(initialEmptyState);
@@ -440,14 +503,15 @@ export default function App() {
             </nav>
 
             <div className="landing-nav-actions">
-              {/* Theme Toggle */}
+              {/* Cozy Theme Toggle Icon Only */}
               <button
                 type="button"
-                className="btn-theme"
+                className="btn-theme-cozy"
                 onClick={toggleTheme}
-                aria-label="Ganti mode terang atau gelap"
+                aria-label={theme === 'light' ? 'Beralih ke mode gelap' : 'Beralih ke mode terang'}
+                title={theme === 'light' ? 'Beralih ke mode gelap' : 'Beralih ke mode terang'}
               >
-                {theme === 'light' ? '🌙 Mode Gelap' : '☀️ Mode Terang'}
+                {theme === 'light' ? <MoonIcon /> : <SunIcon />}
               </button>
 
               {/* Install PWA Button */}
@@ -457,7 +521,8 @@ export default function App() {
                 onClick={handleInstallApp}
                 title="Install aplikasi ke HP atau Komputer"
               >
-                📱 Install App
+                <PhoneIcon />
+                <span>Install App</span>
               </button>
 
               {/* Enter Builder CTA */}
@@ -710,14 +775,15 @@ export default function App() {
           </div>
 
           <div className="header-actions">
-            {/* Theme Toggle inside Builder */}
+            {/* Cozy Theme Toggle Icon Only */}
             <button
               type="button"
-              className="btn-theme"
+              className="btn-theme-cozy"
               onClick={toggleTheme}
-              aria-label="Ganti mode tema"
+              aria-label={theme === 'light' ? 'Beralih ke mode gelap' : 'Beralih ke mode terang'}
+              title={theme === 'light' ? 'Beralih ke mode gelap' : 'Beralih ke mode terang'}
             >
-              {theme === 'light' ? '🌙 Gelap' : '☀️ Terang'}
+              {theme === 'light' ? <MoonIcon /> : <SunIcon />}
             </button>
 
             <button
