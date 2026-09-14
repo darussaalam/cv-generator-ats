@@ -325,7 +325,7 @@ function MagicWandIcon() {
 export default function App() {
   const [currentView, setCurrentView] = useState('landing');
   const [data, setData] = useState(initialEmptyState);
-  const [hasGenerated, setHasGenerated] = useState(false);
+  const [hasGenerated, setHasGenerated] = useState(true);
   const [toastMessage, setToastMessage] = useState('');
   const [isDragActive, setIsDragActive] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
@@ -619,26 +619,23 @@ export default function App() {
   };
 
   const handleGenerate = () => {
-    if (!data.personal.fullName.trim()) {
-      showToast('Nama Lengkap wajib diisi sebelum membuat preview.');
-      return;
-    }
     setHasGenerated(true);
     showToast('Preview dokumen ATS berhasil diperbarui.');
   };
 
   const handleDownloadPDF = () => {
-    if (!hasGenerated) {
-      if (!data.personal.fullName.trim()) {
-        showToast('Lengkapi nama lengkap terlebih dahulu.');
-        return;
-      }
-      setHasGenerated(true);
+    setHasGenerated(true);
+    const originalTitle = document.title;
+    const cleanName = (data.personal.fullName || '').trim().replace(/[^\w\s-]/g, '').replace(/\s+/g, '_');
+    if (cleanName) {
+      document.title = `CV_${cleanName}_ATS`;
     }
-
     setTimeout(() => {
       window.print();
-    }, 150);
+      setTimeout(() => {
+        document.title = originalTitle;
+      }, 600);
+    }, 200);
   };
 
   const parseBullets = (bulletsText) => {
@@ -2449,7 +2446,7 @@ WhatsApp/Telepon: ${phone}${linkedin ? `\nLinkedIn: ${linkedin}` : ''}${portfoli
           <div className="preview-bar no-print">
             <h2 className="preview-title">Live Preview (PDF)</h2>
             <span className="preview-status">
-              {hasGenerated ? 'Preview Terkini' : 'Generate untuk melihat hasil'}
+              Live Realtime (A4 ATS)
             </span>
           </div>
 
@@ -2463,24 +2460,7 @@ WhatsApp/Telepon: ${phone}${linkedin ? `\nLinkedIn: ${linkedin}` : ''}${portfoli
               id="resume-print-area"
               className={`ats-paper ${isProMode ? `preset-${proPreset}` : ''}`}
             >
-              {!hasGenerated ? (
-                /* Empty state */
-                <div className="empty-preview no-print">
-                  <p className="empty-preview-text">Belum ada preview.</p>
-                  <p className="empty-preview-subtext">
-                    Klik tombol <strong>Generate &amp; Preview</strong> untuk melihat lembar PDF ATS Anda secara instan.
-                  </p>
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={handleGenerate}
-                  >
-                    Generate &amp; Preview
-                  </button>
-                </div>
-              ) : (
-                /* Active state: Strict ATS Resume Layout */
-                <div>
+              <div>
                   {/* Header: Name, Headline & Contact Details */}
                   <div className="ats-header">
                     <h1 className="ats-name">{data.personal.fullName || 'NAMA LENGKAP'}</h1>
@@ -2788,7 +2768,6 @@ WhatsApp/Telepon: ${phone}${linkedin ? `\nLinkedIn: ${linkedin}` : ''}${portfoli
                     </>
                   )}
                 </div>
-              )}
             </div>
           </div>
 

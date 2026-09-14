@@ -1220,7 +1220,7 @@
    MOBILE & RESPONSIVE BEHAVIOR (antislop-layoutmobile)
    Rule: Hide preview on mobile screens <= 1024px
    ========================================================= */
-@media (max-width: 1024px) {
+@media screen and (max-width: 1024px) {
   .preview-column {
     display: none !important;
   }
@@ -1266,7 +1266,7 @@
   }
 }
 
-@media (max-width: 640px) {
+@media screen and (max-width: 640px) {
   .header-inner {
     flex-direction: column;
     align-items: stretch;
@@ -1959,7 +1959,7 @@
   gap: 16px;
 }
 
-@media (max-width: 640px) {
+@media screen and (max-width: 640px) {
   .ai-compare-grid {
     grid-template-columns: 1fr;
   }
@@ -2092,5 +2092,140 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* Bulletproof ATS Resume PDF Print Engine */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm 15mm;
+  }
+
+  html, body {
+    width: 100% !important;
+    min-width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    background: #ffffff !important;
+    background-image: none !important;
+    color: #000000 !important;
+    font-size: 10.5pt !important;
+    line-height: 1.35 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Force hide all non-printable elements */
+  .no-print,
+  .app-header,
+  .form-column,
+  .landing-page,
+  .landing-nav,
+  .landing-hero,
+  .landing-footer,
+  .landing-section,
+  .mobile-bottom-bar,
+  .toast-msg,
+  .modal-overlay,
+  .preview-bar,
+  .dropzone-card,
+  .pro-control-bar,
+  .hr-audit-card,
+  .btn-ai-pill,
+  .empty-preview {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+
+  /* Unconstrain app layout for print flow */
+  .app-container {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+
+  /* Unconstrain preview column from desktop sticky container */
+  .preview-column {
+    display: block !important;
+    visibility: visible !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    height: auto !important;
+    min-height: auto !important;
+  }
+
+  /* Unwrap scrollable wrapper */
+  .paper-wrapper {
+    display: block !important;
+    visibility: visible !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    height: auto !important;
+    min-height: auto !important;
+  }
+
+  /* ATS Document Paper formatting */
+  .ats-paper {
+    display: block !important;
+    visibility: visible !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    page-break-inside: auto;
+  }
+
+  .ats-paper * {
+    visibility: visible !important;
+  }
+
+  .ats-paper a {
+    color: #000000 !important;
+    text-decoration: none !important;
+  }
+
+  .ats-section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .ats-exp-item,
+  .ats-row {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
+
 
 
